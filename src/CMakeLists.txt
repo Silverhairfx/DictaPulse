@@ -1,26 +1,88 @@
-qt_add_executable(dictapulse
-    main.cpp
+set(DICTAPULSE_QML_DIR "${CMAKE_SOURCE_DIR}/qml")
+
+set(DICTAPULSE_QML_FILES
+    "${DICTAPULSE_QML_DIR}/Main.qml"
+    "${DICTAPULSE_QML_DIR}/Overlay.qml"
+    "${DICTAPULSE_QML_DIR}/Theme.qml"
+    "${DICTAPULSE_QML_DIR}/pages/DashboardPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/ShortcutsPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/ModelsPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/LanguagePage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/OutputPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/BackendPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/OverlayAppearancePage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/PrivacyPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/AdvancedPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/AboutPage.qml"
+    "${DICTAPULSE_QML_DIR}/components/Waveform.qml"
+    "${DICTAPULSE_QML_DIR}/components/StatusPill.qml"
+    "${DICTAPULSE_QML_DIR}/components/SectionCard.qml"
+    "${DICTAPULSE_QML_DIR}/components/SettingRow.qml"
+    "${DICTAPULSE_QML_DIR}/components/SidebarItem.qml"
 )
 
-set_source_files_properties(${CMAKE_SOURCE_DIR}/qml/Main.qml
-    PROPERTIES QT_RESOURCE_ALIAS Main.qml
+foreach(qmlfile IN LISTS DICTAPULSE_QML_FILES)
+    cmake_path(RELATIVE_PATH qmlfile BASE_DIRECTORY "${DICTAPULSE_QML_DIR}" OUTPUT_VARIABLE rel)
+    set_source_files_properties("${qmlfile}" PROPERTIES QT_RESOURCE_ALIAS "${rel}")
+endforeach()
+
+set_source_files_properties("${DICTAPULSE_QML_DIR}/Theme.qml"
+    PROPERTIES
+        QT_QML_SINGLETON_TYPE TRUE
+        QT_RESOURCE_ALIAS Theme.qml
 )
+
+set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg"
+    PROPERTIES QT_RESOURCE_ALIAS icons/dictapulse.svg
+)
+
+qt_add_executable(dictapulse
+    main.cpp
+    app/Settings.h
+    app/Settings.cpp
+    app/Controller.h
+    app/Controller.cpp
+    core/audio/AudioCapture.h
+    core/audio/AudioCapture.cpp
+    core/transcription/WhisperEngine.h
+    core/transcription/WhisperEngine.cpp
+    core/models/ModelCatalog.h
+    core/models/ModelCatalog.cpp
+    core/models/ModelManager.h
+    core/models/ModelManager.cpp
+    core/text/TextProcessor.h
+    core/text/TextProcessor.cpp
+    core/hardware/HardwareInfo.h
+    core/hardware/HardwareInfo.cpp
+    platform/PlatformAdapter.h
+    platform/linux/LinuxAdapter.h
+    platform/linux/LinuxAdapter.cpp
+    platform/linux/TextInjector.h
+    platform/linux/TextInjector.cpp
+)
+
+target_include_directories(dictapulse PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 qt_add_qml_module(dictapulse
     URI DictaPulse
     VERSION 1.0
-    QML_FILES
-        ${CMAKE_SOURCE_DIR}/qml/Main.qml
+    QML_FILES ${DICTAPULSE_QML_FILES}
+    RESOURCES
+        ${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg
 )
 
 target_link_libraries(dictapulse PRIVATE
     Qt6::Core
     Qt6::Gui
+    Qt6::Widgets
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::Multimedia
     Qt6::Svg
+    Qt6::Network
+    Qt6::DBus
+    whisper
 )
 
 if(DICTAPULSE_HAVE_KF6)
@@ -39,7 +101,9 @@ set_target_properties(dictapulse PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-install(TARGETS dictapulse
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION bin
-)
+install(TARGETS dictapulse RUNTIME DESTINATION bin)
+install(FILES ${CMAKE_SOURCE_DIR}/resources/desktop/dictapulse.desktop
+        DESTINATION share/applications)
+install(FILES ${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg
+        DESTINATION share/icons/hicolor/scalable/apps
+        RENAME dictapulse.svg)

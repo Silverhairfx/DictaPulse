@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=DictaPulse
+GenericName=Voice Dictation
+Comment=Local AI voice dictation for KDE Plasma
+Exec=dictapulse
+Icon=dictapulse
+Terminal=false
+Categories=Utility;AudioVideo;Accessibility;Qt;KDE;
+StartupNotify=false
+StartupWMClass=dictapulse
+Keywords=dictation;speech;voice;whisper;transcribe;
+X-GNOME-UsesNotifications=true

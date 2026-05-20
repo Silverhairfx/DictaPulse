@@ -1,0 +1,139 @@
+#include "AudioCapture.h"
+
+#include <QAudioDevice>
+#include <QAudioFormat>
+#include <QAudioSource>
+#include <QDateTime>
+#include <QDebug>
+#include <QMediaDevices>
+
+#include <algorithm>
+#include <cmath>
+
+namespace dictapulse {
+
+namespace {
+double computeRms(const qint16* samples, qsizetype count)
+{
+    if (count <= 0) return 0.0;
+    double sumSq = 0.0;
+    for (qsizetype i = 0; i < count; ++i) {
+        const double s = static_cast<double>(samples[i]) / 32768.0;
+        sumSq += s * s;
+    }
+    return std::sqrt(sumSq / static_cast<double>(count));
+}
+} // namespace
+
+AudioCapture::AudioCapture(QObject* parent)
+    : QObject(parent)
+{
+    m_silenceTimer.setInterval(100);
+    connect(&m_silenceTimer, &QTimer::timeout, this, &AudioCapture::onSilenceTick);
+    m_maxTimer.setSingleShot(true);
+    connect(&m_maxTimer, &QTimer::timeout, this, &AudioCapture::stop);
+}
+
+AudioCapture::~AudioCapture()
+{
+    stop();
+}
+
+void AudioCapture::start(double vadThreshold, int silenceMs, int maxSeconds)
+{
+    if (m_recording) return;
+
+    QAudioFormat fmt;
+    fmt.setSampleRate(kSampleRate);
+    fmt.setChannelCount(kChannels);
+    fmt.setSampleFormat(QAudioFormat::Int16);
+
+    const QAudioDevice device = QMediaDevices::defaultAudioInput();
+    if (device.isNull()) {
+        emit error(tr("No audio input device available."));
+        return;
+    }
+    if (!device.isFormatSupported(fmt)) {
+        emit error(tr("Default microphone does not support 16 kHz mono PCM."));
+        return;
+    }
+
+    m_pcm.clear();
+    m_pcm.reserve(kSampleRate * 2 * 30); // 30s prealloc
+    m_vadThreshold = vadThreshold;
+    m_silenceMs = silenceMs;
+    m_lastVoiceAtMs = QDateTime::currentMSecsSinceEpoch();
+
+    delete m_source;
+    m_source = new QAudioSource(device, fmt, this);
+    m_source->setBufferSize(kSampleRate * 2 / 10); // ~100ms
+
+    m_io = m_source->start();
+    if (!m_io) {
+        emit error(tr("Failed to start audio source."));
+        delete m_source;
+        m_source = nullptr;
+        return;
+    }
+    connect(m_io.data(), &QIODevice::readyRead, this, &AudioCapture::onReadyRead);
+
+    m_recording = true;
+    m_silenceTimer.start();
+    if (maxSeconds > 0) m_maxTimer.start(maxSeconds * 1000);
+    emit started();
+}
+
+void AudioCapture::stop()
+{
+    if (!m_recording) return;
+    m_silenceTimer.stop();
+    m_maxTimer.stop();
+    if (m_source) {
+        m_source->stop();
+        m_source->deleteLater();
+        m_source = nullptr;
+    }
+    m_io.clear();
+    m_recording = false;
+    emit stopped();
+}
+
+void AudioCapture::onReadyRead()
+{
+    if (!m_io) return;
+    const QByteArray chunk = m_io->readAll();
+    if (chunk.isEmpty()) return;
+    m_pcm.append(chunk);
+
+    const auto* samples = reinterpret_cast<const qint16*>(chunk.constData());
+    const qsizetype count = chunk.size() / static_cast<qsizetype>(sizeof(qint16));
+    const double rms = computeRms(samples, count);
+    emit levelChanged(rms);
+    if (rms > m_vadThreshold) {
+        m_lastVoiceAtMs = QDateTime::currentMSecsSinceEpoch();
+    }
+}
+
+void AudioCapture::onSilenceTick()
+{
+    if (!m_recording) return;
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (now - m_lastVoiceAtMs > m_silenceMs && m_pcm.size() > kSampleRate * 2 / 2) {
+        emit silenceDetected();
+    }
+}
+
+std::vector<float> AudioCapture::takeFloatSamples()
+{
+    const auto* samples = reinterpret_cast<const qint16*>(m_pcm.constData());
+    const qsizetype count = m_pcm.size() / static_cast<qsizetype>(sizeof(qint16));
+    std::vector<float> out;
+    out.resize(static_cast<size_t>(count));
+    for (qsizetype i = 0; i < count; ++i) {
+        out[static_cast<size_t>(i)] = static_cast<float>(samples[i]) / 32768.0f;
+    }
+    m_pcm.clear();
+    return out;
+}
+
+} // namespace dictapulse

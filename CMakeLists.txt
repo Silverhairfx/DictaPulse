@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(DictaPulse
-    VERSION 0.0.1
+    VERSION 0.1.0
     DESCRIPTION "Local AI voice dictation for KDE Plasma"
     HOMEPAGE_URL "https://github.com/Silverhairfx/DictaPulse"
-    LANGUAGES CXX
+    LANGUAGES C CXX
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,6 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
@@ -20,20 +21,29 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# ---- Options ----
+option(DICTAPULSE_ENABLE_VULKAN "Build whisper.cpp with Vulkan acceleration" OFF)
+option(DICTAPULSE_ENABLE_CUDA   "Build whisper.cpp with CUDA acceleration"   OFF)
+option(DICTAPULSE_ENABLE_HIP    "Build whisper.cpp with ROCm/HIP acceleration" OFF)
+
 # ---- Qt 6 ----
 find_package(Qt6 6.6 REQUIRED COMPONENTS
     Core
     Gui
+    Widgets
     Qml
     Quick
     QuickControls2
     Multimedia
     Svg
+    Network
+    DBus
 )
 
 qt_standard_project_setup(REQUIRES 6.6)
+qt_policy(SET QTP0004 NEW)
 
-# ---- Optional: KDE Frameworks 6 (Linux only) ----
+# ---- Optional: KDE Frameworks 6 ----
 set(DICTAPULSE_HAVE_KF6 FALSE)
 if(UNIX AND NOT APPLE)
     find_package(ECM 6.0 QUIET NO_MODULE)
@@ -56,5 +66,34 @@ if(UNIX AND NOT APPLE)
         message(STATUS "DictaPulse: KF6 integration disabled (ECM not found)")
     endif()
 endif()
+
+# ---- whisper.cpp (vendored via FetchContent) ----
+include(FetchContent)
+set(WHISPER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(WHISPER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(WHISPER_BUILD_SERVER OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
+if(DICTAPULSE_ENABLE_VULKAN)
+    set(GGML_VULKAN ON CACHE BOOL "" FORCE)
+    message(STATUS "DictaPulse: Vulkan acceleration enabled")
+endif()
+if(DICTAPULSE_ENABLE_CUDA)
+    set(GGML_CUDA ON CACHE BOOL "" FORCE)
+    message(STATUS "DictaPulse: CUDA acceleration enabled")
+endif()
+if(DICTAPULSE_ENABLE_HIP)
+    set(GGML_HIP ON CACHE BOOL "" FORCE)
+    message(STATUS "DictaPulse: ROCm/HIP acceleration enabled")
+endif()
+
+FetchContent_Declare(
+    whisper_cpp
+    GIT_REPOSITORY https://github.com/ggml-org/whisper.cpp.git
+    GIT_TAG        v1.7.6
+    GIT_SHALLOW    TRUE
+    EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(whisper_cpp)
 
 add_subdirectory(src)
