@@ -26,8 +26,9 @@ public:
 
     bool isRecording() const { return m_recording; }
 
-    /// Returns interleaved float32 samples in [-1, 1] for whisper.
-    std::vector<float> takeFloatSamples();
+    /// Returns interleaved float32 samples in [-1, 1] for whisper. Trims
+    /// trailing silence so the model isn't fed a long quiet tail.
+    std::vector<float> takeFloatSamples(int keepTrailingSilenceMs = 200);
 
     double peakRms() const { return m_peakRms; }
     double durationSeconds() const;

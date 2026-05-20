@@ -286,10 +286,22 @@ void Controller::runTranscription()
     qInfo("[DictaPulse] captured %.2fs, peak RMS %.4f, threshold %.4f",
           durationSec, peakRms, m_settings->vadThreshold());
 
-    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec]() mutable {
+    const QString defaultLang = m_settings->defaultLanguage();
+
+    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, defaultLang]() mutable {
         WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads);
-        qInfo("[DictaPulse] whisper ok=%d text='%s'", r.ok, qUtf8Printable(r.text));
-        QMetaObject::invokeMethod(this, [this, r, mode, fallback, opts, peakRms, durationSec]() {
+        qInfo("[DictaPulse] whisper ok=%d lang='%s' text='%s'",
+              r.ok, qUtf8Printable(r.detectedLanguage), qUtf8Printable(r.text));
+
+        // Auto-detect on very short/quiet audio frequently returns empty.
+        // Retry once with the user's default language forced.
+        if (r.ok && r.text.trimmed().isEmpty() && autoDetect && !defaultLang.isEmpty()) {
+            qInfo("[DictaPulse] empty under auto-detect, retrying with lang=%s",
+                  qUtf8Printable(defaultLang));
+            r = m_engine->transcribe(samples, defaultLang, false, threads);
+            qInfo("[DictaPulse] retry ok=%d text='%s'", r.ok, qUtf8Printable(r.text));
+        }
+        QMetaObject::invokeMethod(this, [this, r, mode, fallback, opts, peakRms, durationSec, autoDetect]() {
             m_dictationActive = false;
             emit overlayRequested(false);
             if (!r.ok) {
@@ -301,14 +313,25 @@ void Controller::runTranscription()
                                      .arg(durationSec, 0, 'f', 1)
                                      .arg(peakRms, 0, 'f', 3);
             if (polished.trimmed().isEmpty()) {
+                // Surface the empty attempt in the transcript box so the user
+                // can see something *did* happen, not just stare at a placeholder.
+                m_lastTranscript = tr("[empty transcript] %1\nlanguage attempted: %2\n"
+                                      "Whisper returned no text. Tips: speak for at least "
+                                      "2 seconds, switch to the Base or Small model, or "
+                                      "lower the voice threshold in Advanced.")
+                                       .arg(diag,
+                                            r.detectedLanguage.isEmpty()
+                                                ? (autoDetect ? tr("auto-detect") : m_settings->defaultLanguage())
+                                                : r.detectedLanguage);
+                emit lastTranscriptChanged();
                 if (peakRms < 0.003) {
                     setState("idle", tr("No audio (%1) — check mic input").arg(diag));
                     emit notify(tr("DictaPulse"),
                                 tr("Microphone seems silent. Verify your default input in KDE System Settings → Audio → Recording."));
                 } else {
-                    setState("idle", tr("Whisper returned nothing (%1) — try a larger model or speak more clearly").arg(diag));
+                    setState("idle", tr("Whisper returned nothing (%1) — try a longer phrase or a bigger model").arg(diag));
                     emit notify(tr("DictaPulse"),
-                                tr("Audio was captured (peak %1) but Whisper produced no text. Try the Small or Base model.")
+                                tr("Captured audio (peak %1) but Whisper produced no text. Speak for ≥2s, or try the Base/Small model.")
                                     .arg(peakRms, 0, 'f', 3));
                 }
                 return;

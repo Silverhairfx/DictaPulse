@@ -131,16 +131,38 @@ void AudioCapture::onSilenceTick()
     }
 }
 
-std::vector<float> AudioCapture::takeFloatSamples()
+std::vector<float> AudioCapture::takeFloatSamples(int keepTrailingSilenceMs)
 {
     const auto* samples = reinterpret_cast<const qint16*>(m_pcm.constData());
-    const qsizetype count = m_pcm.size() / static_cast<qsizetype>(sizeof(qint16));
+    const qsizetype total = m_pcm.size() / static_cast<qsizetype>(sizeof(qint16));
     std::vector<float> out;
-    out.resize(static_cast<size_t>(count));
-    for (qsizetype i = 0; i < count; ++i) {
+    out.resize(static_cast<size_t>(total));
+    for (qsizetype i = 0; i < total; ++i) {
         out[static_cast<size_t>(i)] = static_cast<float>(samples[i]) / 32768.0f;
     }
     m_pcm.clear();
+
+    if (out.empty() || keepTrailingSilenceMs < 0) return out;
+
+    // Trim trailing silence: scan backwards in 20 ms windows; cut once we hit
+    // a window whose RMS is above (vadThreshold * 0.6). Keep keepTrailingMs
+    // of buffer so the model doesn't see an abrupt cliff.
+    const int windowSamples = kSampleRate * 20 / 1000;
+    const double trimThreshold = std::max(0.001, m_vadThreshold * 0.6);
+    size_t lastVoiceEnd = out.size();
+    for (size_t end = out.size(); end >= static_cast<size_t>(windowSamples); end -= windowSamples) {
+        const size_t start = end - windowSamples;
+        double sumSq = 0.0;
+        for (size_t i = start; i < end; ++i) sumSq += out[i] * out[i];
+        const double rms = std::sqrt(sumSq / windowSamples);
+        if (rms > trimThreshold) {
+            lastVoiceEnd = end;
+            break;
+        }
+    }
+    const size_t keepSamples = static_cast<size_t>(kSampleRate * keepTrailingSilenceMs / 1000);
+    const size_t newSize = std::min(out.size(), lastVoiceEnd + keepSamples);
+    if (newSize < out.size()) out.resize(newSize);
     return out;
 }
 

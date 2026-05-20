@@ -76,9 +76,13 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     params.no_context = true;
     params.single_segment = false;
     params.suppress_blank = true;
-    params.suppress_nst = true;
+    // suppress_nst is aggressive on short utterances and rushed speech — many
+    // valid transcriptions get filtered out as 'non-speech tokens'. Off.
+    params.suppress_nst = false;
     params.detect_language = autoDetect;
     params.temperature = 0.0f;
+    params.no_speech_thold = 0.3f;     // less strict than default 0.6
+    params.logprob_thold = -1.5f;      // accept lower-confidence tokens
 
     const QByteArray langBytes = language.toUtf8();
     if (!autoDetect && !language.isEmpty()) {
