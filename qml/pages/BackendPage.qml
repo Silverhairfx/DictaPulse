@@ -75,7 +75,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("CPU threads")
-                hint: qsTr("0 = auto. More threads can speed up CPU transcription but use more power.")
+                hint: qsTr("More threads can speed up CPU transcription but use more power. Default is half of your logical cores.")
                 SpinBox {
                     from: 1
                     to: hardwareInfo.cpuThreads

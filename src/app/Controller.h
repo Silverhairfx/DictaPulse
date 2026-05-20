@@ -52,6 +52,7 @@ public:
     Q_INVOKABLE void startDictation();
     Q_INVOKABLE void stopDictation();
     Q_INVOKABLE void cancelDictation();
+    Q_INVOKABLE void clearError();
     Q_INVOKABLE void applyShortcuts();
     Q_INVOKABLE bool ensureModelLoaded();
     Q_INVOKABLE void showSettingsWindow();

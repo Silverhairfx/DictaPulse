@@ -51,6 +51,15 @@ Controller::Controller(Settings* settings,
         if (!id.isEmpty()) m_settings->setActiveModel(id);
     }
 
+    // Auto-activate a model the moment it finishes downloading, if none is set.
+    connect(m_models, &ModelManager::downloadFinished, this,
+            [this](const QString& id, const QString&) {
+                if (m_settings->activeModel().isEmpty()) {
+                    m_settings->setActiveModel(id);
+                }
+                clearError();
+            });
+
     applyShortcuts();
 }
 
@@ -76,11 +85,21 @@ void Controller::setState(const QString& newState, const QString& status)
 
 void Controller::setError(const QString& err)
 {
-    m_lastError = err;
-    emit lastErrorChanged();
+    if (m_lastError != err) {
+        m_lastError = err;
+        emit lastErrorChanged();
+    }
     if (!err.isEmpty()) {
         setState("error", err);
         emit notify(tr("DictaPulse error"), err);
+    }
+}
+
+void Controller::clearError()
+{
+    if (!m_lastError.isEmpty()) {
+        m_lastError.clear();
+        emit lastErrorChanged();
     }
 }
 
@@ -169,6 +188,7 @@ void Controller::toggleDictation()
 void Controller::startDictation()
 {
     if (m_dictationActive) return;
+    clearError();
     if (!ensureModelLoaded()) return;
 
     m_dictationActive = true;
@@ -254,6 +274,11 @@ void Controller::runTranscription()
                 return;
             }
             const QString polished = m_text->process(r.text, r.detectedLanguage, opts);
+            if (polished.trimmed().isEmpty()) {
+                setState("idle", tr("No speech detected"));
+                emit notify(tr("DictaPulse"), tr("No speech detected — try speaking a little louder, or lower the voice threshold in Advanced."));
+                return;
+            }
             m_lastTranscript = polished;
             emit lastTranscriptChanged();
 

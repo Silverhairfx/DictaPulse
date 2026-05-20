@@ -46,6 +46,11 @@ ScrollView {
                                 Layout.fillWidth: true
                             }
                             StatusPill {
+                                visible: appSettings.activeModel === modelId
+                                text: qsTr("Active")
+                                tint: Theme.accent
+                            }
+                            StatusPill {
                                 visible: installed
                                 text: qsTr("Installed")
                                 tint: Theme.success
