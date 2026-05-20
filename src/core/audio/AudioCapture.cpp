@@ -62,6 +62,7 @@ void AudioCapture::start(double vadThreshold, int silenceMs, int maxSeconds)
     m_pcm.reserve(kSampleRate * 2 * 30); // 30s prealloc
     m_vadThreshold = vadThreshold;
     m_silenceMs = silenceMs;
+    m_peakRms = 0.0;
     m_lastVoiceAtMs = QDateTime::currentMSecsSinceEpoch();
 
     delete m_source;
@@ -108,10 +109,17 @@ void AudioCapture::onReadyRead()
     const auto* samples = reinterpret_cast<const qint16*>(chunk.constData());
     const qsizetype count = chunk.size() / static_cast<qsizetype>(sizeof(qint16));
     const double rms = computeRms(samples, count);
+    if (rms > m_peakRms) m_peakRms = rms;
     emit levelChanged(rms);
     if (rms > m_vadThreshold) {
         m_lastVoiceAtMs = QDateTime::currentMSecsSinceEpoch();
     }
+}
+
+double AudioCapture::durationSeconds() const
+{
+    const qsizetype bytes = m_pcm.size();
+    return static_cast<double>(bytes / 2) / static_cast<double>(kSampleRate);
 }
 
 void AudioCapture::onSilenceTick()

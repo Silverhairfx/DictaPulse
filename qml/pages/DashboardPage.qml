@@ -26,6 +26,7 @@ ScrollView {
                     text: controller.statusText
                     color: Theme.text
                     Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
                 }
             }
             Label {
@@ -34,6 +35,50 @@ ScrollView {
                 color: Theme.danger
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
+            }
+
+            // Live mic level — helpful when diagnosing 'no speech detected'.
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 4
+                visible: controller.state === "listening" || controller.level > 0.0005
+                RowLayout {
+                    Layout.fillWidth: true
+                    Label {
+                        text: qsTr("Mic level")
+                        color: Theme.textDim
+                        font.pixelSize: 11
+                    }
+                    Item { Layout.fillWidth: true }
+                    Label {
+                        text: controller.level.toFixed(3) + "  (threshold " + appSettings.vadThreshold.toFixed(3) + ")"
+                        color: controller.level > appSettings.vadThreshold ? Theme.success : Theme.textDim
+                        font.pixelSize: 11
+                        font.family: "monospace"
+                    }
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 6
+                    radius: 3
+                    color: Theme.bg
+                    border.color: Theme.border
+                    Rectangle {
+                        width: Math.min(parent.width, parent.width * Math.min(1.0, controller.level * 12))
+                        height: parent.height
+                        radius: 3
+                        color: controller.level > appSettings.vadThreshold ? Theme.success : Theme.accent
+                        Behavior on width { NumberAnimation { duration: 60 } }
+                    }
+                    Rectangle {
+                        x: parent.width * Math.min(1.0, appSettings.vadThreshold * 12)
+                        y: -2
+                        width: 2
+                        height: parent.height + 4
+                        color: Theme.danger
+                        opacity: 0.6
+                    }
+                }
             }
 
             RowLayout {

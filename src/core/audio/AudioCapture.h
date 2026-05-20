@@ -29,6 +29,9 @@ public:
     /// Returns interleaved float32 samples in [-1, 1] for whisper.
     std::vector<float> takeFloatSamples();
 
+    double peakRms() const { return m_peakRms; }
+    double durationSeconds() const;
+
 signals:
     void levelChanged(double rms);
     void silenceDetected();
@@ -53,6 +56,7 @@ private:
     double m_vadThreshold = 0.012;
     int m_silenceMs = 1200;
     qint64 m_lastVoiceAtMs = 0;
+    double m_peakRms = 0.0;
     bool m_recording = false;
 };
 
