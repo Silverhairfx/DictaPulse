@@ -65,9 +65,26 @@ ScrollView {
             }
             SettingRow {
                 label: qsTr("Start minimized to tray")
+                hint: qsTr("Skip showing the settings window on launch. The tray icon still appears.")
                 Switch {
                     checked: appSettings.startMinimized
                     onToggled: appSettings.startMinimized = checked
+                }
+            }
+            SettingRow {
+                label: qsTr("Close button minimizes to tray")
+                hint: qsTr("If off, the X button quits DictaPulse instead of hiding it to the tray.")
+                Switch {
+                    checked: appSettings.closeToTray
+                    onToggled: appSettings.closeToTray = checked
+                }
+            }
+            SettingRow {
+                label: qsTr("Animate tray icon")
+                hint: qsTr("Pulses the tray icon while listening or transcribing. Useful when the floating overlay is disabled.")
+                Switch {
+                    checked: appSettings.trayIconAnimation
+                    onToggled: appSettings.trayIconAnimation = checked
                 }
             }
             SettingRow {

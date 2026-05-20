@@ -104,17 +104,21 @@ set_target_properties(dictapulse PROPERTIES
 
 include(GNUInstallDirs)
 
-# Substitute the absolute bin path into the .desktop Exec line so KDE/GNOME
-# launchers find the binary regardless of whether ~/.local/bin is on the
-# graphical session PATH.
-configure_file(
-    "${CMAKE_SOURCE_DIR}/resources/desktop/dictapulse.desktop.in"
-    "${CMAKE_BINARY_DIR}/dictapulse.desktop"
-    @ONLY
-)
-
 install(TARGETS dictapulse RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${CMAKE_BINARY_DIR}/dictapulse.desktop
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+
+# Materialize the .desktop file at INSTALL time, not configure time, so the
+# Exec path reflects --prefix passed to `cmake --install`. (Previously baked
+# /usr/local/bin into the file when the user installed to ~/.local, breaking
+# the KDE launcher.)
+install(CODE "
+    set(_bindir \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}\")
+    set(_dest_dir \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/applications\")
+    file(MAKE_DIRECTORY \"\${_dest_dir}\")
+    file(READ \"${CMAKE_SOURCE_DIR}/resources/desktop/dictapulse.desktop.in\" _desktop)
+    string(REPLACE \"@CMAKE_INSTALL_FULL_BINDIR@\" \"\${_bindir}\" _desktop \"\${_desktop}\")
+    file(WRITE \"\${_dest_dir}/dictapulse.desktop\" \"\${_desktop}\")
+    message(STATUS \"Installed desktop entry pointing at \${_bindir}/dictapulse\")
+")
+
 install(FILES ${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg
         DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)

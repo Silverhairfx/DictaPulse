@@ -25,10 +25,13 @@ class Settings : public QObject {
     Q_PROPERTY(int silenceMs READ silenceMs WRITE setSilenceMs NOTIFY silenceMsChanged)
     Q_PROPERTY(int maxRecordingSeconds READ maxRecordingSeconds WRITE setMaxRecordingSeconds NOTIFY maxRecordingSecondsChanged)
     Q_PROPERTY(double vadThreshold READ vadThreshold WRITE setVadThreshold NOTIFY vadThresholdChanged)
+    Q_PROPERTY(bool overlayEnabled READ overlayEnabled WRITE setOverlayEnabled NOTIFY overlayEnabledChanged)
     Q_PROPERTY(QString overlayPosition READ overlayPosition WRITE setOverlayPosition NOTIFY overlayPositionChanged)
     Q_PROPERTY(double overlayOpacity READ overlayOpacity WRITE setOverlayOpacity NOTIFY overlayOpacityChanged)
     Q_PROPERTY(bool overlayWaveform READ overlayWaveform WRITE setOverlayWaveform NOTIFY overlayWaveformChanged)
     Q_PROPERTY(bool overlayReduceMotion READ overlayReduceMotion WRITE setOverlayReduceMotion NOTIFY overlayReduceMotionChanged)
+    Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
+    Q_PROPERTY(bool trayIconAnimation READ trayIconAnimation WRITE setTrayIconAnimation NOTIFY trayIconAnimationChanged)
     Q_PROPERTY(bool cleanupEnabled READ cleanupEnabled WRITE setCleanupEnabled NOTIFY cleanupEnabledChanged)
     Q_PROPERTY(bool capitalizeSentences READ capitalizeSentences WRITE setCapitalizeSentences NOTIFY capitalizeSentencesChanged)
     Q_PROPERTY(bool removeFillerWords READ removeFillerWords WRITE setRemoveFillerWords NOTIFY removeFillerWordsChanged)
@@ -83,6 +86,8 @@ public:
     double vadThreshold() const;
     void setVadThreshold(double value);
 
+    bool overlayEnabled() const;
+    void setOverlayEnabled(bool value);
     QString overlayPosition() const;
     void setOverlayPosition(const QString& value);
     double overlayOpacity() const;
@@ -91,6 +96,10 @@ public:
     void setOverlayWaveform(bool value);
     bool overlayReduceMotion() const;
     void setOverlayReduceMotion(bool value);
+    bool closeToTray() const;
+    void setCloseToTray(bool value);
+    bool trayIconAnimation() const;
+    void setTrayIconAnimation(bool value);
 
     bool cleanupEnabled() const;
     void setCleanupEnabled(bool value);
@@ -136,10 +145,13 @@ signals:
     void silenceMsChanged();
     void maxRecordingSecondsChanged();
     void vadThresholdChanged();
+    void overlayEnabledChanged();
     void overlayPositionChanged();
     void overlayOpacityChanged();
     void overlayWaveformChanged();
     void overlayReduceMotionChanged();
+    void closeToTrayChanged();
+    void trayIconAnimationChanged();
     void cleanupEnabledChanged();
     void capitalizeSentencesChanged();
     void removeFillerWordsChanged();

@@ -3,6 +3,7 @@
 #include "platform/PlatformAdapter.h"
 
 #include <QPointer>
+#include <QTimer>
 
 class QAction;
 
@@ -30,15 +31,24 @@ public:
     void showTrayMessage(const QString& title, const QString& body) override;
     void setTrayState(const QString& state, const QString& tooltip) override;
 
+    void setAnimationEnabled(bool enabled);
+
 private:
     QAction* createGlobalAction(const QString& objectName,
                                 const QString& label,
                                 const QString& sequence);
     void buildTrayMenu();
+    void startAnimation();
+    void stopAnimation();
+    void onAnimationTick();
 
     QAction* m_dictateAction = nullptr;
     QAction* m_cancelAction = nullptr;
     TextInjector* m_injector = nullptr;
+    QTimer m_animTimer;
+    QString m_currentState = "idle";
+    int m_animFrame = 0;
+    bool m_animEnabled = true;
 #ifdef DICTAPULSE_HAVE_KF6
     KStatusNotifierItem* m_tray = nullptr;
 #endif

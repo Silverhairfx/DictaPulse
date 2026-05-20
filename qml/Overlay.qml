@@ -6,31 +6,38 @@ import DictaPulse
 
 Window {
     id: overlayWin
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WA_TranslucentBackground
+
+    // Wayland is restrictive about always-on-top / frameless windows.
+    // FramelessWindowHint + WindowStaysOnTopHint is the most we can portably
+    // request. Qt.Tool keeps it out of the taskbar/task switcher.
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
     color: "transparent"
+
     width: 360
     height: 60
     visible: false
     opacity: appSettings.overlayOpacity
 
     function showOverlay() {
+        if (!appSettings.overlayEnabled) return
         positionWindow()
         visible = true
-        fadeIn.start()
+        fadeIn.restart()
     }
     function hideOverlay() {
-        fadeOut.start()
+        if (!visible) return
+        fadeOut.restart()
     }
     function positionWindow() {
         const screen = Qt.application.screens[0]
+        if (!screen) return
         const sw = screen.geometry.width
         const sh = screen.geometry.height
         const pos = appSettings.overlayPosition
         let x = (sw - width) / 2
-        let y = sh - height - 80
+        let y = sh - height - 100
         if (pos === "top-center") y = 80
         if (pos === "cursor") {
-            // best effort — Wayland will likely override
             x = Math.min(sw - width - 20, Math.max(20, sw / 2 - width / 2))
             y = Math.min(sh - height - 80, Math.max(80, sh / 2))
         }
@@ -38,10 +45,16 @@ Window {
         overlayWin.y = y + screen.geometry.y
     }
 
-    NumberAnimation { id: fadeIn; target: overlayWin; property: "opacity"; from: 0.0; to: appSettings.overlayOpacity; duration: 160 }
+    NumberAnimation {
+        id: fadeIn
+        target: overlayWin; property: "opacity"
+        from: 0.0; to: appSettings.overlayOpacity
+        duration: 160
+    }
     NumberAnimation {
         id: fadeOut
-        target: overlayWin; property: "opacity"; to: 0.0; duration: 180
+        target: overlayWin; property: "opacity"
+        to: 0.0; duration: 180
         onFinished: overlayWin.visible = false
     }
 
@@ -54,9 +67,6 @@ Window {
                      : controller.state === "processing" ? Theme.warning
                      : Theme.border
         border.width: 1
-
-        layer.enabled: true
-        layer.smooth: true
 
         RowLayout {
             anchors.fill: parent
@@ -88,7 +98,7 @@ Window {
 
             Label {
                 text: controller.state === "processing" ? qsTr("Transcribing…")
-                    : controller.state === "listening" ? appSettings.defaultLanguage.toUpperCase()
+                    : controller.state === "listening" ? (appSettings.autoDetectLanguage ? "AUTO" : appSettings.defaultLanguage.toUpperCase())
                     : controller.state === "error" ? qsTr("Error")
                     : qsTr("Ready")
                 color: Theme.textDim

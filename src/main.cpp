@@ -31,6 +31,11 @@ int main(int argc, char* argv[])
     auto* hardware = new dictapulse::HardwareInfo(&app);
     auto* models = new dictapulse::ModelManager(&app);
     auto* platform = new dictapulse::LinuxAdapter(&app);
+    platform->setAnimationEnabled(settings->trayIconAnimation());
+    QObject::connect(settings, &dictapulse::Settings::trayIconAnimationChanged,
+                     platform, [platform, settings]() {
+                         platform->setAnimationEnabled(settings->trayIconAnimation());
+                     });
     auto* controller = new dictapulse::Controller(settings, models, hardware, platform, &app);
 
     QQmlApplicationEngine engine;

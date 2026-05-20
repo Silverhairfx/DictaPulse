@@ -38,9 +38,12 @@ ApplicationWindow {
     }
 
     onClosing: function(closeEvent) {
-        // Hide to tray instead of quitting.
-        closeEvent.accepted = false
-        window.hide()
+        if (appSettings.closeToTray) {
+            closeEvent.accepted = false
+            window.hide()
+        } else {
+            controller.quitApp()
+        }
     }
 
     RowLayout {
@@ -148,27 +151,17 @@ ApplicationWindow {
         }
     }
 
-    // --- Floating overlay (separate Window) ---
-    Loader {
-        id: overlayLoader
-        active: false
-        sourceComponent: overlayComponent
-    }
-
-    Component {
-        id: overlayComponent
-        Overlay {}
+    // Floating overlay lives as a sibling Window. Wayland refuses to display
+    // Window items wrapped in a Loader inside another Window; keep it top-level.
+    Overlay {
+        id: overlay
     }
 
     Connections {
         target: controller
         function onOverlayRequested(show) {
-            if (show) {
-                overlayLoader.active = true
-                if (overlayLoader.item) overlayLoader.item.showOverlay()
-            } else if (overlayLoader.item) {
-                overlayLoader.item.hideOverlay()
-            }
+            if (show) overlay.showOverlay()
+            else      overlay.hideOverlay()
         }
     }
 }

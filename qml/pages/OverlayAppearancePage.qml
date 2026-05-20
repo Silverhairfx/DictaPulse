@@ -14,6 +14,15 @@ ScrollView {
             subtitle: qsTr("The small floating pill that appears when you start dictating.")
 
             SettingRow {
+                label: qsTr("Show overlay while dictating")
+                hint: qsTr("If off, no floating bar appears — rely on the tray icon for visual feedback.")
+                Switch {
+                    checked: appSettings.overlayEnabled
+                    onToggled: appSettings.overlayEnabled = checked
+                }
+            }
+
+            SettingRow {
                 label: qsTr("Position")
                 ComboBox {
                     width: 220

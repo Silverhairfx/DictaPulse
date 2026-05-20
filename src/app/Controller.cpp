@@ -209,7 +209,7 @@ void Controller::startDictation()
     if (!ensureModelLoaded()) return;
 
     m_dictationActive = true;
-    emit overlayRequested(true);
+    if (m_settings->overlayEnabled()) emit overlayRequested(true);
     m_capture->start(m_settings->vadThreshold(),
                      m_settings->silenceMs(),
                      m_settings->maxRecordingSeconds());

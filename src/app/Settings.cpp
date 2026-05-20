@@ -25,6 +25,9 @@ constexpr auto kCpuThreads = "backend/cpuThreads";
 constexpr auto kSilenceMs = "dictation/silenceMs";
 constexpr auto kMaxSeconds = "dictation/maxSeconds";
 constexpr auto kVadThreshold = "dictation/vadThreshold";
+constexpr auto kOverlayEnabled = "overlay/enabled";
+constexpr auto kCloseToTray = "general/closeToTray";
+constexpr auto kTrayAnimation = "general/trayAnimation";
 constexpr auto kOverlayPosition = "overlay/position";
 constexpr auto kOverlayOpacity = "overlay/opacity";
 constexpr auto kOverlayWaveform = "overlay/waveform";
@@ -114,6 +117,9 @@ DICTAPULSE_SETTING_INT(cpuThreads, setCpuThreads, kCpuThreads, qMax(1, QThread::
 DICTAPULSE_SETTING_INT(silenceMs, setSilenceMs, kSilenceMs, 1200, silenceMsChanged)
 DICTAPULSE_SETTING_INT(maxRecordingSeconds, setMaxRecordingSeconds, kMaxSeconds, 60, maxRecordingSecondsChanged)
 DICTAPULSE_SETTING_DBL(vadThreshold, setVadThreshold, kVadThreshold, 0.005, vadThresholdChanged)
+DICTAPULSE_SETTING_BOOL(overlayEnabled, setOverlayEnabled, kOverlayEnabled, true, overlayEnabledChanged)
+DICTAPULSE_SETTING_BOOL(closeToTray, setCloseToTray, kCloseToTray, true, closeToTrayChanged)
+DICTAPULSE_SETTING_BOOL(trayIconAnimation, setTrayIconAnimation, kTrayAnimation, true, trayIconAnimationChanged)
 DICTAPULSE_SETTING_STR(overlayPosition, setOverlayPosition, kOverlayPosition, "bottom-center", overlayPositionChanged)
 DICTAPULSE_SETTING_DBL(overlayOpacity, setOverlayOpacity, kOverlayOpacity, 0.95, overlayOpacityChanged)
 DICTAPULSE_SETTING_BOOL(overlayWaveform, setOverlayWaveform, kOverlayWaveform, true, overlayWaveformChanged)
@@ -162,6 +168,9 @@ void Settings::resetToDefaults()
     emit silenceMsChanged();
     emit maxRecordingSecondsChanged();
     emit vadThresholdChanged();
+    emit overlayEnabledChanged();
+    emit closeToTrayChanged();
+    emit trayIconAnimationChanged();
     emit overlayPositionChanged();
     emit overlayOpacityChanged();
     emit overlayWaveformChanged();

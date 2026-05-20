@@ -19,6 +19,8 @@ LinuxAdapter::LinuxAdapter(QObject* parent)
     : PlatformAdapter(parent)
     , m_injector(new TextInjector(this))
 {
+    m_animTimer.setInterval(500);
+    connect(&m_animTimer, &QTimer::timeout, this, &LinuxAdapter::onAnimationTick);
     buildTrayMenu();
 }
 
@@ -106,26 +108,79 @@ void LinuxAdapter::showTrayMessage(const QString& title, const QString& body)
 
 void LinuxAdapter::setTrayState(const QString& state, const QString& tooltip)
 {
+    m_currentState = state;
 #ifdef DICTAPULSE_HAVE_KF6
     if (!m_tray) return;
     m_tray->setToolTipSubTitle(tooltip);
     if (state == "listening") {
         m_tray->setStatus(KStatusNotifierItem::NeedsAttention);
+        m_tray->setAttentionIconByName(QStringLiteral("media-record"));
         m_tray->setIconByName(QStringLiteral("audio-input-microphone"));
+        if (m_animEnabled) startAnimation();
     } else if (state == "processing") {
         m_tray->setStatus(KStatusNotifierItem::Active);
         m_tray->setIconByName(QStringLiteral("system-run"));
+        if (m_animEnabled) startAnimation();
+        else stopAnimation();
     } else if (state == "error") {
         m_tray->setStatus(KStatusNotifierItem::NeedsAttention);
+        m_tray->setAttentionIconByName(QStringLiteral("dialog-error"));
         m_tray->setIconByName(QStringLiteral("dialog-error"));
+        stopAnimation();
     } else {
         m_tray->setStatus(KStatusNotifierItem::Passive);
         m_tray->setIconByName(QStringLiteral("audio-input-microphone"));
+        stopAnimation();
     }
 #else
-    Q_UNUSED(state)
     Q_UNUSED(tooltip)
 #endif
+}
+
+void LinuxAdapter::startAnimation()
+{
+    if (!m_animTimer.isActive()) {
+        m_animFrame = 0;
+        m_animTimer.start();
+    }
+}
+
+void LinuxAdapter::stopAnimation()
+{
+    if (m_animTimer.isActive()) m_animTimer.stop();
+}
+
+void LinuxAdapter::onAnimationTick()
+{
+#ifdef DICTAPULSE_HAVE_KF6
+    if (!m_tray) return;
+    m_animFrame = (m_animFrame + 1) % 2;
+    if (m_currentState == "listening") {
+        m_tray->setIconByName(m_animFrame == 0 ? QStringLiteral("media-record")
+                                               : QStringLiteral("audio-input-microphone"));
+    } else if (m_currentState == "processing") {
+        m_tray->setIconByName(m_animFrame == 0 ? QStringLiteral("view-refresh")
+                                               : QStringLiteral("system-run"));
+    } else {
+        stopAnimation();
+    }
+#endif
+}
+
+void LinuxAdapter::setAnimationEnabled(bool enabled)
+{
+    m_animEnabled = enabled;
+    if (!enabled) {
+        stopAnimation();
+        // Restore a stable icon if we were mid-animation.
+#ifdef DICTAPULSE_HAVE_KF6
+        if (m_tray && (m_currentState == "listening" || m_currentState == "processing")) {
+            m_tray->setIconByName(QStringLiteral("audio-input-microphone"));
+        }
+#endif
+    } else if (m_currentState == "listening" || m_currentState == "processing") {
+        startAnimation();
+    }
 }
 
 void LinuxAdapter::buildTrayMenu()
