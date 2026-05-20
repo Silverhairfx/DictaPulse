@@ -55,6 +55,8 @@ public:
     Q_INVOKABLE void clearError();
     Q_INVOKABLE void applyShortcuts();
     Q_INVOKABLE bool ensureModelLoaded();
+    Q_INVOKABLE QString keySequenceFromEvent(int key, int modifiers) const;
+    Q_INVOKABLE QString modifierLabel(int modifiers) const;
     Q_INVOKABLE void showSettingsWindow();
     Q_INVOKABLE void quitApp();
 

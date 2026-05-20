@@ -10,6 +10,7 @@
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QKeySequence>
 
 namespace dictapulse {
 
@@ -114,6 +115,22 @@ void Controller::applyShortcuts()
     if (!m_platform) return;
     m_platform->registerDictationShortcut(m_settings->shortcutDictate());
     m_platform->registerCancelShortcut(m_settings->shortcutCancel());
+}
+
+QString Controller::keySequenceFromEvent(int key, int modifiers) const
+{
+    if (key == 0) return {};
+    return QKeySequence(key | modifiers).toString(QKeySequence::PortableText);
+}
+
+QString Controller::modifierLabel(int modifiers) const
+{
+    QStringList parts;
+    if (modifiers & Qt::ControlModifier) parts << QStringLiteral("Ctrl");
+    if (modifiers & Qt::AltModifier)     parts << QStringLiteral("Alt");
+    if (modifiers & Qt::ShiftModifier)   parts << QStringLiteral("Shift");
+    if (modifiers & Qt::MetaModifier)    parts << QStringLiteral("Meta");
+    return parts.join(QLatin1Char('+'));
 }
 
 bool Controller::ensureModelLoaded()

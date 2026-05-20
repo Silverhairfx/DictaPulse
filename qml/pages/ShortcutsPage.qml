@@ -4,31 +4,46 @@ import QtQuick.Layouts
 import DictaPulse
 
 ScrollView {
+    id: pageRoot
     clip: true
+
     ColumnLayout {
-        width: parent.width
+        width: pageRoot.width
         spacing: Theme.gap
 
         SectionCard {
             title: qsTr("Global shortcuts")
-            subtitle: qsTr("These are registered with KGlobalAccel and work anywhere in KDE Plasma, even when DictaPulse is in the tray.")
+            subtitle: qsTr("Click a field, then press the key combination you want. Press Esc to cancel, Backspace to clear. Shortcuts apply instantly and work anywhere in KDE Plasma via KGlobalAccel.")
 
             SettingRow {
                 label: qsTr("Start / stop dictation")
-                hint: qsTr("Default: Ctrl+Alt+Space. Click 'Apply' after changing.")
-                TextField {
-                    width: 200
-                    text: appSettings.shortcutDictate
-                    onEditingFinished: appSettings.shortcutDictate = text
+                hint: qsTr("Default: Ctrl+Alt+Space.")
+                ShortcutCapture {
+                    sequence: appSettings.shortcutDictate
+                    onSequenceCaptured: function(seq) {
+                        appSettings.shortcutDictate = seq
+                        controller.applyShortcuts()
+                    }
+                    onCleared: {
+                        appSettings.shortcutDictate = ""
+                        controller.applyShortcuts()
+                    }
                 }
             }
 
             SettingRow {
                 label: qsTr("Cancel dictation")
-                TextField {
-                    width: 200
-                    text: appSettings.shortcutCancel
-                    onEditingFinished: appSettings.shortcutCancel = text
+                hint: qsTr("Default: Escape (only works while the overlay is visible).")
+                ShortcutCapture {
+                    sequence: appSettings.shortcutCancel
+                    onSequenceCaptured: function(seq) {
+                        appSettings.shortcutCancel = seq
+                        controller.applyShortcuts()
+                    }
+                    onCleared: {
+                        appSettings.shortcutCancel = ""
+                        controller.applyShortcuts()
+                    }
                 }
             }
 
@@ -36,7 +51,7 @@ ScrollView {
                 Layout.fillWidth: true
                 Item { Layout.fillWidth: true }
                 Button {
-                    text: qsTr("Apply shortcuts")
+                    text: qsTr("Re-apply shortcuts")
                     onClicked: controller.applyShortcuts()
                 }
             }
@@ -48,15 +63,18 @@ ScrollView {
                 label: qsTr("Mode")
                 hint: qsTr("Push-to-talk holds while you speak. Toggle starts/stops with separate presses. Auto-stop ends after silence.")
                 ComboBox {
-                    width: 220
-                    model: [
-                        { value: "toggle", label: qsTr("Toggle (press to start / press to stop)") },
-                        { value: "ptt", label: qsTr("Push-to-talk (hold while speaking)") },
-                        { value: "auto-stop", label: qsTr("Auto-stop on silence") }
-                    ]
+                    width: 280
                     textRole: "label"
                     valueRole: "value"
-                    Component.onCompleted: currentIndex = indexOfValue(appSettings.dictationMode)
+                    model: [
+                        { value: "toggle",    label: qsTr("Toggle (press to start / press to stop)") },
+                        { value: "ptt",       label: qsTr("Push-to-talk (hold while speaking)") },
+                        { value: "auto-stop", label: qsTr("Auto-stop on silence") }
+                    ]
+                    Component.onCompleted: {
+                        const idx = indexOfValue(appSettings.dictationMode)
+                        if (idx >= 0) currentIndex = idx
+                    }
                     onActivated: appSettings.dictationMode = currentValue
                 }
             }

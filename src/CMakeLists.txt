@@ -19,6 +19,7 @@ set(DICTAPULSE_QML_FILES
     "${DICTAPULSE_QML_DIR}/components/SectionCard.qml"
     "${DICTAPULSE_QML_DIR}/components/SettingRow.qml"
     "${DICTAPULSE_QML_DIR}/components/SidebarItem.qml"
+    "${DICTAPULSE_QML_DIR}/components/ShortcutCapture.qml"
 )
 
 foreach(qmlfile IN LISTS DICTAPULSE_QML_FILES)
