@@ -54,7 +54,8 @@ bool WhisperEngine::loadModel(const QString& path, bool useGpu)
 WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& samples,
                                                 const QString& language,
                                                 bool autoDetect,
-                                                int threads)
+                                                int threads,
+                                                bool translate)
 {
     Result result;
     if (!m_ctx) {
@@ -68,7 +69,7 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
 
     whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
     params.n_threads = threads > 0 ? threads : 4;
-    params.translate = false;
+    params.translate = translate;
     params.print_progress = false;
     params.print_realtime = false;
     params.print_timestamps = false;
@@ -85,7 +86,12 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     params.logprob_thold = -1.5f;      // accept lower-confidence tokens
 
     const QByteArray langBytes = language.toUtf8();
-    if (!autoDetect && !language.isEmpty()) {
+    if (autoDetect) {
+        // 'auto' is whisper.cpp's documented sentinel for "no prior". Without
+        // this whisper.cpp keeps the default ('en'), which silently biases the
+        // language detector toward English on short clips.
+        params.language = "auto";
+    } else if (!language.isEmpty()) {
         params.language = langBytes.constData();
     }
 

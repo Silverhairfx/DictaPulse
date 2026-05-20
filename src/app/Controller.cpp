@@ -283,27 +283,22 @@ void Controller::runTranscription()
     opts.removeFillers = m_settings->removeFillerWords();
     opts.trailingSpace = m_settings->addTrailingSpace();
 
-    qInfo("[DictaPulse] captured %.2fs, peak RMS %.4f, threshold %.4f",
-          durationSec, peakRms, m_settings->vadThreshold());
+    const bool translate = m_settings->translateToEnglish();
 
-    const QString defaultLang = m_settings->defaultLanguage();
+    qInfo("[DictaPulse] captured %.2fs, peak RMS %.4f, threshold %.4f, translate=%d",
+          durationSec, peakRms, m_settings->vadThreshold(), translate);
 
-    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, defaultLang]() mutable {
-        WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads);
+    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, translate]() mutable {
+        WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads, translate);
         qInfo("[DictaPulse] whisper ok=%d lang='%s' text='%s'",
               r.ok, qUtf8Printable(r.detectedLanguage), qUtf8Printable(r.text));
-
-        // Auto-detect on very short/quiet audio frequently returns empty.
-        // Retry once with the user's default language forced.
-        if (r.ok && r.text.trimmed().isEmpty() && autoDetect && !defaultLang.isEmpty()) {
-            qInfo("[DictaPulse] empty under auto-detect, retrying with lang=%s",
-                  qUtf8Printable(defaultLang));
-            r = m_engine->transcribe(samples, defaultLang, false, threads);
-            qInfo("[DictaPulse] retry ok=%d text='%s'", r.ok, qUtf8Printable(r.text));
-        }
         QMetaObject::invokeMethod(this, [this, r, mode, fallback, opts, peakRms, durationSec, autoDetect]() {
             m_dictationActive = false;
             emit overlayRequested(false);
+            if (r.ok && !r.detectedLanguage.isEmpty() && m_detectedLanguage != r.detectedLanguage) {
+                m_detectedLanguage = r.detectedLanguage;
+                emit detectedLanguageChanged();
+            }
             if (!r.ok) {
                 setError(r.error.isEmpty() ? tr("Transcription failed") : r.error);
                 return;

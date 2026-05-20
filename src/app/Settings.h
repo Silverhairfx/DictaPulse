@@ -18,6 +18,7 @@ class Settings : public QObject {
     Q_PROPERTY(QString defaultLanguage READ defaultLanguage WRITE setDefaultLanguage NOTIFY defaultLanguageChanged)
     Q_PROPERTY(QStringList enabledLanguages READ enabledLanguages WRITE setEnabledLanguages NOTIFY enabledLanguagesChanged)
     Q_PROPERTY(bool autoDetectLanguage READ autoDetectLanguage WRITE setAutoDetectLanguage NOTIFY autoDetectLanguageChanged)
+    Q_PROPERTY(bool translateToEnglish READ translateToEnglish WRITE setTranslateToEnglish NOTIFY translateToEnglishChanged)
     Q_PROPERTY(QString backendMode READ backendMode WRITE setBackendMode NOTIFY backendModeChanged)
     Q_PROPERTY(QString backendApi READ backendApi WRITE setBackendApi NOTIFY backendApiChanged)
     Q_PROPERTY(int cpuThreads READ cpuThreads WRITE setCpuThreads NOTIFY cpuThreadsChanged)
@@ -65,6 +66,8 @@ public:
     void setEnabledLanguages(const QStringList& value);
     bool autoDetectLanguage() const;
     void setAutoDetectLanguage(bool value);
+    bool translateToEnglish() const;
+    void setTranslateToEnglish(bool value);
 
     QString backendMode() const;
     void setBackendMode(const QString& value);
@@ -126,6 +129,7 @@ signals:
     void defaultLanguageChanged();
     void enabledLanguagesChanged();
     void autoDetectLanguageChanged();
+    void translateToEnglishChanged();
     void backendModeChanged();
     void backendApiChanged();
     void cpuThreadsChanged();

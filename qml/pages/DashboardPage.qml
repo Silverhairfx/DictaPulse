@@ -4,10 +4,75 @@ import QtQuick.Layouts
 import DictaPulse
 
 ScrollView {
+    id: pageRoot
     clip: true
+
+    property var languageOptions: [
+        { code: "en", name: qsTr("English") },
+        { code: "ar", name: qsTr("Arabic") },
+        { code: "it", name: qsTr("Italian") },
+        { code: "fr", name: qsTr("French") },
+        { code: "de", name: qsTr("German") },
+        { code: "es", name: qsTr("Spanish") },
+        { code: "pt", name: qsTr("Portuguese") },
+        { code: "ru", name: qsTr("Russian") },
+        { code: "tr", name: qsTr("Turkish") },
+        { code: "nl", name: qsTr("Dutch") },
+        { code: "pl", name: qsTr("Polish") },
+        { code: "ja", name: qsTr("Japanese") },
+        { code: "zh", name: qsTr("Chinese") }
+    ]
+
     ColumnLayout {
-        width: parent.width
+        width: pageRoot.width
         spacing: Theme.gap
+
+        SectionCard {
+            title: qsTr("Speak in")
+            subtitle: qsTr("Force the spoken language for accurate transcription. Auto-detect is best for clean English; on short or non-English clips it often guesses wrong, so set the language explicitly when speaking Arabic, Italian, etc.")
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.gap
+
+                ComboBox {
+                    id: langBox
+                    Layout.preferredWidth: 200
+                    enabled: !appSettings.autoDetectLanguage
+                    textRole: "name"
+                    valueRole: "code"
+                    model: pageRoot.languageOptions
+                    Component.onCompleted: {
+                        const idx = indexOfValue(appSettings.defaultLanguage)
+                        if (idx >= 0) currentIndex = idx
+                    }
+                    onActivated: appSettings.defaultLanguage = currentValue
+                }
+
+                CheckBox {
+                    text: qsTr("Auto-detect")
+                    checked: appSettings.autoDetectLanguage
+                    onToggled: appSettings.autoDetectLanguage = checked
+                }
+
+                CheckBox {
+                    text: qsTr("Translate to English")
+                    checked: appSettings.translateToEnglish
+                    onToggled: appSettings.translateToEnglish = checked
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Use Whisper's translate task — speak in any language, get English text.")
+                    ToolTip.delay: 600
+                }
+
+                Item { Layout.fillWidth: true }
+
+                StatusPill {
+                    visible: controller.detectedLanguage !== ""
+                    text: qsTr("Last detected: ") + controller.detectedLanguage.toUpperCase()
+                    tint: Theme.accent
+                }
+            }
+        }
 
         SectionCard {
             title: qsTr("Status")

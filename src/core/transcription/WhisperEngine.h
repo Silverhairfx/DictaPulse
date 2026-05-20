@@ -30,10 +30,14 @@ public:
     QString loadedModelPath() const { return m_path; }
 
     /// Runs synchronously. Call from a worker thread.
+    /// `translate`: optional Whisper feature that transcribes-and-translates
+    /// from the spoken language into English. Off by default — DictaPulse is
+    /// a transcription tool, not a translator.
     Result transcribe(const std::vector<float>& samples,
                       const QString& language,
                       bool autoDetect,
-                      int threads);
+                      int threads,
+                      bool translate = false);
 
 signals:
     void modelLoaded(const QString& path);

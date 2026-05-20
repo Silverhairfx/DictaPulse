@@ -18,6 +18,7 @@ constexpr auto kActiveModel = "models/active";
 constexpr auto kDefaultLanguage = "language/default";
 constexpr auto kEnabledLanguages = "language/enabled";
 constexpr auto kAutoDetect = "language/autoDetect";
+constexpr auto kTranslate = "language/translateToEnglish";
 constexpr auto kBackendMode = "backend/mode";
 constexpr auto kBackendApi = "backend/api";
 constexpr auto kCpuThreads = "backend/cpuThreads";
@@ -106,8 +107,9 @@ DICTAPULSE_SETTING_BOOL(clipboardFallback, setClipboardFallback, kClipboardFallb
 DICTAPULSE_SETTING_STR(activeModel, setActiveModel, kActiveModel, "", activeModelChanged)
 DICTAPULSE_SETTING_STR(defaultLanguage, setDefaultLanguage, kDefaultLanguage, "en", defaultLanguageChanged)
 DICTAPULSE_SETTING_BOOL(autoDetectLanguage, setAutoDetectLanguage, kAutoDetect, false, autoDetectLanguageChanged)
-DICTAPULSE_SETTING_STR(backendMode, setBackendMode, kBackendMode, "cpu", backendModeChanged)
-DICTAPULSE_SETTING_STR(backendApi, setBackendApi, kBackendApi, "cpu", backendApiChanged)
+DICTAPULSE_SETTING_BOOL(translateToEnglish, setTranslateToEnglish, kTranslate, false, translateToEnglishChanged)
+DICTAPULSE_SETTING_STR(backendMode, setBackendMode, kBackendMode, "gpu", backendModeChanged)
+DICTAPULSE_SETTING_STR(backendApi, setBackendApi, kBackendApi, "vulkan", backendApiChanged)
 DICTAPULSE_SETTING_INT(cpuThreads, setCpuThreads, kCpuThreads, qMax(1, QThread::idealThreadCount() / 2), cpuThreadsChanged)
 DICTAPULSE_SETTING_INT(silenceMs, setSilenceMs, kSilenceMs, 1200, silenceMsChanged)
 DICTAPULSE_SETTING_INT(maxRecordingSeconds, setMaxRecordingSeconds, kMaxSeconds, 60, maxRecordingSecondsChanged)
@@ -153,6 +155,7 @@ void Settings::resetToDefaults()
     emit defaultLanguageChanged();
     emit enabledLanguagesChanged();
     emit autoDetectLanguageChanged();
+    emit translateToEnglishChanged();
     emit backendModeChanged();
     emit backendApiChanged();
     emit cpuThreadsChanged();

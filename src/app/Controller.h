@@ -27,6 +27,7 @@ class Controller : public QObject {
     Q_PROPERTY(double level READ level NOTIFY levelChanged)
     Q_PROPERTY(QString lastTranscript READ lastTranscript NOTIFY lastTranscriptChanged)
     Q_PROPERTY(QString lastError READ lastError NOTIFY lastErrorChanged)
+    Q_PROPERTY(QString detectedLanguage READ detectedLanguage NOTIFY detectedLanguageChanged)
     Q_PROPERTY(Settings* settings READ settings CONSTANT)
     Q_PROPERTY(ModelManager* models READ models CONSTANT)
     Q_PROPERTY(HardwareInfo* hardware READ hardware CONSTANT)
@@ -44,6 +45,7 @@ public:
     double level() const { return m_level; }
     QString lastTranscript() const { return m_lastTranscript; }
     QString lastError() const { return m_lastError; }
+    QString detectedLanguage() const { return m_detectedLanguage; }
     Settings* settings() const { return m_settings; }
     ModelManager* models() const { return m_models; }
     HardwareInfo* hardware() const { return m_hardware; }
@@ -66,6 +68,7 @@ signals:
     void levelChanged();
     void lastTranscriptChanged();
     void lastErrorChanged();
+    void detectedLanguageChanged();
     void overlayRequested(bool show);
     void settingsRequested();
     void notify(const QString& title, const QString& body);
@@ -101,6 +104,7 @@ private:
     double m_level = 0.0;
     QString m_lastTranscript;
     QString m_lastError;
+    QString m_detectedLanguage;
     bool m_dictationActive = false;
 };
 
