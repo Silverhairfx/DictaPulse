@@ -1,0 +1,33 @@
+---
+Language: Cpp
+BasedOnStyle: WebKit
+Standard: c++20
+ColumnLimit: 100
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+BreakBeforeBraces: Linux
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+NamespaceIndentation: None
+PointerAlignment: Left
+ReferenceAlignment: Left
+SortIncludes: CaseInsensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<Q[A-Z]'
+    Priority: 2
+  - Regex: '^<(KF6|KConfig|KGlobalAccel)'
+    Priority: 3
+  - Regex: '^<.*\.h(pp)?>'
+    Priority: 4
+  - Regex: '^<.*>'
+    Priority: 5
+  - Regex: '^".*"'
+    Priority: 1
+SpaceBeforeParens: ControlStatements
