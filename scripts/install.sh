@@ -55,12 +55,18 @@ cmake --build "${BUILD_DIR}" -j "$(nproc)"
 say "Installing into ${PREFIX}"
 cmake --install "${BUILD_DIR}"
 
-# Update the user-local icon and desktop database so the launcher picks it up.
+# Refresh launcher caches so the new .desktop and icon are visible immediately.
 if command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database "${PREFIX}/share/applications" 2>/dev/null || true
 fi
 if command -v gtk-update-icon-cache >/dev/null 2>&1; then
-    gtk-update-icon-cache "${PREFIX}/share/icons/hicolor" 2>/dev/null || true
+    gtk-update-icon-cache -f -t "${PREFIX}/share/icons/hicolor" 2>/dev/null || true
+fi
+# KDE: rebuild the system configuration cache (covers app menu + icon lookup).
+if command -v kbuildsycoca6 >/dev/null 2>&1; then
+    kbuildsycoca6 --noincremental 2>/dev/null || true
+elif command -v kbuildsycoca5 >/dev/null 2>&1; then
+    kbuildsycoca5 --noincremental 2>/dev/null || true
 fi
 
 cat <<EOF

@@ -101,9 +101,19 @@ set_target_properties(dictapulse PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-install(TARGETS dictapulse RUNTIME DESTINATION bin)
-install(FILES ${CMAKE_SOURCE_DIR}/resources/desktop/dictapulse.desktop
-        DESTINATION share/applications)
+include(GNUInstallDirs)
+
+# Substitute the absolute bin path into the .desktop Exec line so KDE/GNOME
+# launchers find the binary regardless of whether ~/.local/bin is on the
+# graphical session PATH.
+configure_file(
+    "${CMAKE_SOURCE_DIR}/resources/desktop/dictapulse.desktop.in"
+    "${CMAKE_BINARY_DIR}/dictapulse.desktop"
+    @ONLY
+)
+
+install(TARGETS dictapulse RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES ${CMAKE_BINARY_DIR}/dictapulse.desktop
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES ${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg
-        DESTINATION share/icons/hicolor/scalable/apps
-        RENAME dictapulse.svg)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
