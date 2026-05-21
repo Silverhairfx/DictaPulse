@@ -6,12 +6,20 @@
 
 #include <QApplication>
 #include <QIcon>
+#include <QLoggingCategory>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
 
 int main(int argc, char* argv[])
 {
+    // qInfo() is suppressed by default in release; we use it for the
+    // [DictaPulse] diagnostic lines that drive bug reports. Force-on
+    // unless the user has explicitly set QT_LOGGING_RULES themselves.
+    if (qEnvironmentVariableIsEmpty("QT_LOGGING_RULES")) {
+        QLoggingCategory::setFilterRules(QStringLiteral("*.info=true"));
+    }
+
     QApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName("DictaPulse");

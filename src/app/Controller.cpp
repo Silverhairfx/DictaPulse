@@ -12,6 +12,8 @@
 #include <QDebug>
 #include <QKeySequence>
 
+#include <cstdio>
+
 namespace dictapulse {
 
 Controller::Controller(Settings* settings,
@@ -229,8 +231,8 @@ void Controller::cancelDictation()
     }
     m_dictationActive = false;
     m_capture->stop();
-    // Discard buffered samples.
-    (void)m_capture->takeFloatSamples();
+    // Discard buffered samples — gain doesn't matter for a throwaway.
+    (void)m_capture->takeFloatSamples(-1, false, 1.0);
     setState("idle", tr("Cancelled"));
     emit overlayRequested(false);
 }
@@ -270,7 +272,9 @@ void Controller::onCaptureStopped()
 void Controller::runTranscription()
 {
     const double peakRms = m_capture->peakRms();
-    auto samples = m_capture->takeFloatSamples();
+    auto samples = m_capture->takeFloatSamples(200,
+                                               m_settings->autoGainEnabled(),
+                                               m_settings->inputGain());
     const double durationSec = static_cast<double>(samples.size()) / 16000.0;
     const QString lang = activeLanguage();
     const bool autoDetect = m_settings->autoDetectLanguage();
@@ -285,13 +289,17 @@ void Controller::runTranscription()
 
     const bool translate = m_settings->translateToEnglish();
 
-    qInfo("[DictaPulse] captured %.2fs, peak RMS %.4f, threshold %.4f, translate=%d",
-          durationSec, peakRms, m_settings->vadThreshold(), translate);
+    std::fprintf(stderr,
+                 "[DictaPulse] captured %.2fs, peak RMS %.4f, threshold %.4f, translate=%d\n",
+                 durationSec, peakRms, m_settings->vadThreshold(), translate);
+    std::fflush(stderr);
 
     QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, translate]() mutable {
         WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads, translate);
-        qInfo("[DictaPulse] whisper ok=%d lang='%s' text='%s'",
-              r.ok, qUtf8Printable(r.detectedLanguage), qUtf8Printable(r.text));
+        std::fprintf(stderr,
+                     "[DictaPulse] whisper ok=%d lang='%s' text='%s'\n",
+                     r.ok, qUtf8Printable(r.detectedLanguage), qUtf8Printable(r.text));
+        std::fflush(stderr);
         QMetaObject::invokeMethod(this, [this, r, mode, fallback, opts, peakRms, durationSec, autoDetect]() {
             m_dictationActive = false;
             emit overlayRequested(false);

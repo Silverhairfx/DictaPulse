@@ -27,8 +27,13 @@ public:
     bool isRecording() const { return m_recording; }
 
     /// Returns interleaved float32 samples in [-1, 1] for whisper. Trims
-    /// trailing silence so the model isn't fed a long quiet tail.
-    std::vector<float> takeFloatSamples(int keepTrailingSilenceMs = 200);
+    /// trailing silence so the model isn't fed a long quiet tail. When
+    /// autoGain is true, normalizes peak to ~0.5 (capped at 20x gain) so
+    /// quiet mics still land in whisper's training range. manualGain is
+    /// applied on top; final samples are clipped to [-1, 1].
+    std::vector<float> takeFloatSamples(int keepTrailingSilenceMs = 200,
+                                        bool autoGain = true,
+                                        double manualGain = 1.0);
 
     double peakRms() const { return m_peakRms; }
     double durationSeconds() const;

@@ -80,7 +80,11 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     // suppress_nst is aggressive on short utterances and rushed speech — many
     // valid transcriptions get filtered out as 'non-speech tokens'. Off.
     params.suppress_nst = false;
-    params.detect_language = autoDetect;
+    // CRITICAL: detect_language=true means "detect language and STOP" (whisper.cpp
+    // returns 0 with no segments). For detect+transcribe we leave this false and
+    // rely on language="auto" below to trigger detection that continues into
+    // transcription. Setting both produces empty transcripts on every auto-detect.
+    params.detect_language = false;
     params.temperature = 0.0f;
     params.no_speech_thold = 0.3f;     // less strict than default 0.6
     params.logprob_thold = -1.5f;      // accept lower-confidence tokens

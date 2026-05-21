@@ -25,6 +25,8 @@ constexpr auto kCpuThreads = "backend/cpuThreads";
 constexpr auto kSilenceMs = "dictation/silenceMs";
 constexpr auto kMaxSeconds = "dictation/maxSeconds";
 constexpr auto kVadThreshold = "dictation/vadThreshold";
+constexpr auto kAutoGain = "audio/autoGain";
+constexpr auto kInputGain = "audio/inputGain";
 constexpr auto kOverlayEnabled = "overlay/enabled";
 constexpr auto kCloseToTray = "general/closeToTray";
 constexpr auto kTrayAnimation = "general/trayAnimation";
@@ -117,6 +119,8 @@ DICTAPULSE_SETTING_INT(cpuThreads, setCpuThreads, kCpuThreads, qMax(1, QThread::
 DICTAPULSE_SETTING_INT(silenceMs, setSilenceMs, kSilenceMs, 1200, silenceMsChanged)
 DICTAPULSE_SETTING_INT(maxRecordingSeconds, setMaxRecordingSeconds, kMaxSeconds, 60, maxRecordingSecondsChanged)
 DICTAPULSE_SETTING_DBL(vadThreshold, setVadThreshold, kVadThreshold, 0.005, vadThresholdChanged)
+DICTAPULSE_SETTING_BOOL(autoGainEnabled, setAutoGainEnabled, kAutoGain, true, autoGainEnabledChanged)
+DICTAPULSE_SETTING_DBL(inputGain, setInputGain, kInputGain, 1.0, inputGainChanged)
 DICTAPULSE_SETTING_BOOL(overlayEnabled, setOverlayEnabled, kOverlayEnabled, true, overlayEnabledChanged)
 DICTAPULSE_SETTING_BOOL(closeToTray, setCloseToTray, kCloseToTray, true, closeToTrayChanged)
 DICTAPULSE_SETTING_BOOL(trayIconAnimation, setTrayIconAnimation, kTrayAnimation, true, trayIconAnimationChanged)
@@ -168,6 +172,8 @@ void Settings::resetToDefaults()
     emit silenceMsChanged();
     emit maxRecordingSecondsChanged();
     emit vadThresholdChanged();
+    emit autoGainEnabledChanged();
+    emit inputGainChanged();
     emit overlayEnabledChanged();
     emit closeToTrayChanged();
     emit trayIconAnimationChanged();

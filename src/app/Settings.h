@@ -25,6 +25,8 @@ class Settings : public QObject {
     Q_PROPERTY(int silenceMs READ silenceMs WRITE setSilenceMs NOTIFY silenceMsChanged)
     Q_PROPERTY(int maxRecordingSeconds READ maxRecordingSeconds WRITE setMaxRecordingSeconds NOTIFY maxRecordingSecondsChanged)
     Q_PROPERTY(double vadThreshold READ vadThreshold WRITE setVadThreshold NOTIFY vadThresholdChanged)
+    Q_PROPERTY(bool autoGainEnabled READ autoGainEnabled WRITE setAutoGainEnabled NOTIFY autoGainEnabledChanged)
+    Q_PROPERTY(double inputGain READ inputGain WRITE setInputGain NOTIFY inputGainChanged)
     Q_PROPERTY(bool overlayEnabled READ overlayEnabled WRITE setOverlayEnabled NOTIFY overlayEnabledChanged)
     Q_PROPERTY(QString overlayPosition READ overlayPosition WRITE setOverlayPosition NOTIFY overlayPositionChanged)
     Q_PROPERTY(double overlayOpacity READ overlayOpacity WRITE setOverlayOpacity NOTIFY overlayOpacityChanged)
@@ -85,6 +87,10 @@ public:
     void setMaxRecordingSeconds(int value);
     double vadThreshold() const;
     void setVadThreshold(double value);
+    bool autoGainEnabled() const;
+    void setAutoGainEnabled(bool value);
+    double inputGain() const;
+    void setInputGain(double value);
 
     bool overlayEnabled() const;
     void setOverlayEnabled(bool value);
@@ -145,6 +151,8 @@ signals:
     void silenceMsChanged();
     void maxRecordingSecondsChanged();
     void vadThresholdChanged();
+    void autoGainEnabledChanged();
+    void inputGainChanged();
     void overlayEnabledChanged();
     void overlayPositionChanged();
     void overlayOpacityChanged();

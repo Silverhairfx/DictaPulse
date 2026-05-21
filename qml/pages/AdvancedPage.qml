@@ -54,6 +54,38 @@ ScrollView {
         }
 
         SectionCard {
+            title: qsTr("Audio input gain")
+            SettingRow {
+                label: qsTr("Auto-normalize quiet mics")
+                hint: qsTr("Boosts captured audio so Whisper sees it in its training range (peak ≈ −6 dBFS). Quiet KDE/PipeWire mics return empty transcripts without this. Capped at 20× so true silence isn't amplified.")
+                Switch {
+                    checked: appSettings.autoGainEnabled
+                    onToggled: appSettings.autoGainEnabled = checked
+                }
+            }
+            SettingRow {
+                label: qsTr("Manual input gain")
+                hint: qsTr("Additional multiplier applied after auto-gain. Push higher if transcripts are still empty; pull down if you hear clipping. 1.0× = neutral.")
+                Row {
+                    spacing: 8
+                    Slider {
+                        from: 0.5
+                        to: 5.0
+                        stepSize: 0.1
+                        value: appSettings.inputGain
+                        onMoved: appSettings.inputGain = value
+                        width: 160
+                    }
+                    Label {
+                        text: appSettings.inputGain.toFixed(1) + "×"
+                        color: Theme.textDim
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }
+        }
+
+        SectionCard {
             title: qsTr("General")
             SettingRow {
                 label: qsTr("Launch on KDE startup")
