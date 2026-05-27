@@ -59,7 +59,8 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
                                                 bool autoDetect,
                                                 int threads,
                                                 bool translate,
-                                                const QStringList& candidateLangs)
+                                                const QStringList& candidateLangs,
+                                                const QString& initialPrompt)
 {
     Result result;
     if (!m_ctx) {
@@ -77,7 +78,15 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     // ask whisper for per-language probabilities, and force the highest-scoring
     // *enabled* language. This keeps en/ar working while never picking 'he'.
     QString forcedLang;
-    if (autoDetect && candidateLangs.size() >= 2) {
+    if (autoDetect && candidateLangs.size() == 1) {
+        // Only one enabled language: there's nothing to detect between — force it.
+        // (Falling through to open-set "auto" here is what made single-language
+        // setups silently misbehave.)
+        forcedLang = candidateLangs.first();
+        std::fprintf(stderr, "[DictaPulse] single enabled language: forcing '%s'\n",
+                     qUtf8Printable(forcedLang));
+        std::fflush(stderr);
+    } else if (autoDetect && candidateLangs.size() >= 2) {
         const int nt = threads > 0 ? threads : 4;
         if (whisper_pcm_to_mel(m_ctx, samples.data(), static_cast<int>(samples.size()), nt) == 0) {
             std::vector<float> probs(static_cast<size_t>(whisper_lang_max_id()) + 1, 0.0f);
@@ -118,6 +127,14 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     params.temperature = 0.0f;
     params.no_speech_thold = 0.3f;     // less strict than default 0.6
     params.logprob_thold = -1.5f;      // accept lower-confidence tokens
+
+    // Vocabulary / context biasing. whisper.cpp conditions decoding on this text
+    // as if it preceded the audio, nudging spelling toward these words (names,
+    // jargon, the user's personal dictionary). Kept alive for the whisper_full call.
+    const QByteArray promptBytes = initialPrompt.trimmed().toUtf8();
+    if (!promptBytes.isEmpty()) {
+        params.initial_prompt = promptBytes.constData();
+    }
 
     const QByteArray langBytes = language.toUtf8();
     const QByteArray forcedBytes = forcedLang.toUtf8();

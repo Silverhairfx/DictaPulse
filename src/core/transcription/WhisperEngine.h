@@ -39,7 +39,8 @@ public:
                       bool autoDetect,
                       int threads,
                       bool translate = false,
-                      const QStringList& candidateLangs = {});
+                      const QStringList& candidateLangs = {},
+                      const QString& initialPrompt = {});
 
 signals:
     void modelLoaded(const QString& path);
