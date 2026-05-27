@@ -3,7 +3,6 @@ set(DICTAPULSE_QML_DIR "${CMAKE_SOURCE_DIR}/qml")
 set(DICTAPULSE_QML_FILES
     "${DICTAPULSE_QML_DIR}/Main.qml"
     "${DICTAPULSE_QML_DIR}/Overlay.qml"
-    "${DICTAPULSE_QML_DIR}/Theme.qml"
     "${DICTAPULSE_QML_DIR}/pages/DashboardPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/ShortcutsPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/ModelsPage.qml"
@@ -27,12 +26,6 @@ foreach(qmlfile IN LISTS DICTAPULSE_QML_FILES)
     set_source_files_properties("${qmlfile}" PROPERTIES QT_RESOURCE_ALIAS "${rel}")
 endforeach()
 
-set_source_files_properties("${DICTAPULSE_QML_DIR}/Theme.qml"
-    PROPERTIES
-        QT_QML_SINGLETON_TYPE TRUE
-        QT_RESOURCE_ALIAS Theme.qml
-)
-
 set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg"
     PROPERTIES QT_RESOURCE_ALIAS icons/dictapulse.svg
 )
@@ -48,6 +41,8 @@ qt_add_executable(dictapulse
     main.cpp
     app/Settings.h
     app/Settings.cpp
+    app/ThemeProvider.h
+    app/ThemeProvider.cpp
     app/Controller.h
     app/Controller.cpp
     core/audio/AudioCapture.h
@@ -102,6 +97,8 @@ if(DICTAPULSE_HAVE_KF6)
         KF6::Notifications
         KF6::ConfigCore
         KF6::ConfigGui
+        KF6::ColorScheme
+        KF6::WindowSystem
     )
     target_compile_definitions(dictapulse PRIVATE DICTAPULSE_HAVE_KF6)
 endif()

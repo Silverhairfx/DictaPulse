@@ -54,9 +54,12 @@ if(UNIX AND NOT APPLE)
             StatusNotifierItem
             Notifications
             Config
+            ColorScheme
+            WindowSystem
         )
         if(KF6GlobalAccel_FOUND AND KF6StatusNotifierItem_FOUND
-           AND KF6Notifications_FOUND AND KF6Config_FOUND)
+           AND KF6Notifications_FOUND AND KF6Config_FOUND
+           AND KF6ColorScheme_FOUND AND KF6WindowSystem_FOUND)
             set(DICTAPULSE_HAVE_KF6 TRUE)
             message(STATUS "DictaPulse: KF6 integration enabled")
         else()

@@ -1,18 +1,31 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtQuick.Window
 import DictaPulse
 
 ApplicationWindow {
     id: window
+    objectName: "mainWin"
     width: 980
     height: 640
     minimumWidth: 760
     minimumHeight: 520
     visible: !appSettings.startMinimized
     title: qsTr("DictaPulse")
-    color: Theme.bg
+
+    // Material controls themed to our glass palette; cascades to all children.
+    Material.theme: Theme.mode === "dark" ? Material.Dark : Material.Light
+    Material.accent: Theme.accent
+    Material.primary: Theme.accent
+    Material.foreground: Theme.text
+    Material.roundedScale: Material.SmallScale
+
+    // Transparent surface so the KWin blur frosts the desktop behind us; the
+    // frosted tint is drawn by the background item below.
+    color: "transparent"
+    background: Rectangle { color: Theme.bg }
 
     property int currentPage: 0
     property var pages: [
@@ -48,12 +61,12 @@ ApplicationWindow {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 14
-        spacing: 14
+        anchors.margins: 16
+        spacing: 16
 
         // --- Sidebar ---
         Rectangle {
-            Layout.preferredWidth: 220
+            Layout.preferredWidth: 224
             Layout.fillHeight: true
             color: Theme.bgRaised
             radius: Theme.radius
@@ -62,21 +75,22 @@ ApplicationWindow {
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 14
+                anchors.margins: 16
                 spacing: 8
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 10
+                    spacing: 11
                     Rectangle {
-                        width: 30; height: 30; radius: 8
+                        width: 34; height: 34; radius: 10
                         color: Theme.accentSoft
                         border.color: Theme.accent
+                        border.width: 1
                         Label {
                             anchors.centerIn: parent
                             text: "◢"
                             color: Theme.accent
-                            font.pixelSize: 16
+                            font.pixelSize: 17
                             font.weight: Font.Bold
                         }
                     }
@@ -94,6 +108,30 @@ ApplicationWindow {
                             color: Theme.textDim
                             font.pixelSize: 10
                         }
+                    }
+
+                    // Light / dark toggle. Cycles to an explicit preference;
+                    // the icon reflects what a click switches *to*.
+                    Rectangle {
+                        id: themeToggle
+                        width: 30; height: 30; radius: 8
+                        color: tapHover.hovered ? Theme.bgHover : "transparent"
+                        border.color: Theme.border
+                        border.width: 1
+                        Label {
+                            anchors.centerIn: parent
+                            text: Theme.mode === "dark" ? "☀" : "☾"
+                            color: Theme.text
+                            font.pixelSize: 15
+                        }
+                        HoverHandler { id: tapHover }
+                        TapHandler {
+                            onTapped: appSettings.theme =
+                                (Theme.mode === "dark" ? "light" : "dark")
+                        }
+                        ToolTip.visible: tapHover.hovered
+                        ToolTip.text: Theme.mode === "dark"
+                            ? qsTr("Switch to light") : qsTr("Switch to dark")
                     }
                 }
 

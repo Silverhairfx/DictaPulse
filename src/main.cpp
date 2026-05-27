@@ -1,5 +1,6 @@
 #include "app/Controller.h"
 #include "app/Settings.h"
+#include "app/ThemeProvider.h"
 #include "core/hardware/HardwareInfo.h"
 #include "core/models/ModelManager.h"
 #include "platform/linux/LinuxAdapter.h"
@@ -13,6 +14,7 @@
 #include <QLoggingCategory>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QScreen>
@@ -104,9 +106,21 @@ int main(int argc, char* argv[])
         QIcon::setThemeName("breeze");
     }
 
-    QQuickStyle::setStyle(QStringLiteral("Fusion"));
+    // Material controls (flat, rounded, modern) themed to our glass palette in
+    // Main.qml — replaces Fusion, whose 3D look read as dated.
+    QQuickStyle::setStyle(QStringLiteral("Material"));
 
     auto* settings = new dictapulse::Settings(&app);
+
+    // Theme singleton: adapts to the KDE color scheme + accent, honors the
+    // user's light/dark preference, and drives the frosted-glass blur. Exposed
+    // to QML as `Theme` (replaces the old static Theme.qml).
+    auto* theme = new dictapulse::ThemeProvider(&app);
+    theme->setPreference(settings->theme());
+    QObject::connect(settings, &dictapulse::Settings::themeChanged, theme,
+                     [theme, settings]() { theme->setPreference(settings->theme()); });
+    qmlRegisterSingletonInstance("DictaPulse", 1, 0, "Theme", theme);
+
     auto* hardware = new dictapulse::HardwareInfo(&app);
     auto* models = new dictapulse::ModelManager(&app);
     auto* platform = new dictapulse::LinuxAdapter(&app);
@@ -174,6 +188,18 @@ int main(int argc, char* argv[])
     // window rule (writeOverlayKwinRule) forces bottom-center + keep-above.
     // Find the overlay window, seed the rule from its current size, and keep the
     // rule in sync when the size slider changes.
+    // Frost the desktop behind the main settings window. The window starts
+    // hidden when startMinimized is set, so (re)apply blur whenever it becomes
+    // visible — calling before the window has a platform surface is a no-op.
+    for (QWindow* w : QGuiApplication::topLevelWindows()) {
+        if (w->objectName() != QLatin1String("mainWin")) continue;
+        if (w->isVisible()) theme->enableBlur(w);
+        QObject::connect(w, &QWindow::visibleChanged, w, [theme, w](bool vis) {
+            if (vis) theme->enableBlur(w);
+        });
+        break;
+    }
+
     for (QWindow* w : QGuiApplication::topLevelWindows()) {
         if (w->objectName() != QLatin1String("overlayWin")) continue;
         writeOverlayKwinRule(w->width(), w->height(), settings->overlayPosition());
