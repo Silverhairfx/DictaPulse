@@ -2,6 +2,8 @@
 
 #include "Settings.h"
 #include "core/audio/AudioCapture.h"
+#include "core/cleanup/CleanupService.h"
+#include "core/cleanup/SecretStore.h"
 #include "core/hardware/HardwareInfo.h"
 #include "core/models/ModelManager.h"
 #include "core/text/TextProcessor.h"
@@ -20,12 +22,16 @@ Controller::Controller(Settings* settings,
                        ModelManager* models,
                        HardwareInfo* hardware,
                        PlatformAdapter* platform,
+                       CleanupService* cleanup,
+                       SecretStore* secrets,
                        QObject* parent)
     : QObject(parent)
     , m_settings(settings)
     , m_models(models)
     , m_hardware(hardware)
     , m_platform(platform)
+    , m_cleanup(cleanup)
+    , m_secrets(secrets)
     , m_capture(new AudioCapture(this))
     , m_engine(new WhisperEngine())
     , m_text(new TextProcessor(this))
@@ -314,11 +320,13 @@ void Controller::runTranscription()
                 setError(r.error.isEmpty() ? tr("Transcription failed") : r.error);
                 return;
             }
-            const QString polished = m_text->process(r.text, r.detectedLanguage, opts);
+
+            const QString raw = r.text.trimmed();
             const QString diag = tr("%1s captured · peak %2")
                                      .arg(durationSec, 0, 'f', 1)
                                      .arg(peakRms, 0, 'f', 3);
-            if (polished.trimmed().isEmpty()) {
+
+            if (raw.isEmpty()) {
                 // Surface the empty attempt in the transcript box so the user
                 // can see something *did* happen, not just stare at a placeholder.
                 m_lastTranscript = tr("[empty transcript] %1\nlanguage attempted: %2\n"
@@ -342,35 +350,96 @@ void Controller::runTranscription()
                 }
                 return;
             }
-            m_lastTranscript = polished;
-            emit lastTranscriptChanged();
 
-            const auto inj = m_platform->injectText(polished, mode, fallback);
-            const char* injStr = inj == PlatformAdapter::InjectResult::Inserted ? "Inserted"
-                               : inj == PlatformAdapter::InjectResult::ClipboardOnly ? "ClipboardOnly"
-                               : "Failed";
-            std::fprintf(stderr,
-                         "[DictaPulse] inject mode='%s' fallback=%d result=%s chars=%lld\n",
-                         qUtf8Printable(mode), fallback, injStr,
-                         static_cast<long long>(polished.size()));
-            std::fflush(stderr);
-            QString detail;
-            switch (inj) {
-            case PlatformAdapter::InjectResult::Inserted:
-                detail = tr("Inserted (%1 chars)").arg(polished.size());
-                break;
-            case PlatformAdapter::InjectResult::ClipboardOnly:
-                detail = tr("Copied to clipboard");
-                emit notify(tr("DictaPulse"), tr("Copied %1 characters to clipboard").arg(polished.size()));
-                break;
-            case PlatformAdapter::InjectResult::Failed:
-                detail = tr("Insertion failed");
-                emit notify(tr("DictaPulse"), tr("Could not insert text — copied to clipboard"));
-                break;
+            // Route the raw transcript through the configured cleanup provider.
+            //   none  → inject as-is        rules → TextProcessor (offline)
+            //   local → OpenAI-compat LLM   remote → Anthropic/OpenAI/custom
+            const QString provider = m_settings->cleanupProvider();
+            const QString cleanupLang = r.detectedLanguage.isEmpty()
+                                            ? m_settings->defaultLanguage()
+                                            : r.detectedLanguage;
+
+            if (m_cleanup && (provider == QLatin1String("local") || provider == QLatin1String("remote"))) {
+                setState("cleaning", tr("Cleaning…"));
+                CleanupService::Config cfg;
+                cfg.provider = provider;
+                cfg.localEndpoint = m_settings->cleanupLocalEndpoint();
+                cfg.localModel = m_settings->cleanupLocalModel();
+                cfg.remoteProvider = m_settings->cleanupRemoteProvider();
+                cfg.remoteModel = m_settings->cleanupRemoteModel();
+                cfg.remoteEndpoint = m_settings->cleanupRemoteEndpoint();
+                cfg.systemPrompt = m_settings->cleanupSystemPrompt();
+                if (provider == QLatin1String("remote") && m_secrets)
+                    cfg.apiKey = m_secrets->key(m_settings->cleanupRemoteProvider());
+                // cfg.vocabulary is filled once the vocabulary feature lands.
+
+                // One request in flight at a time; clear any prior handlers.
+                disconnect(m_cleanup, nullptr, this, nullptr);
+                connect(m_cleanup, &CleanupService::cleaned, this,
+                        [this, mode, fallback, opts](const QString& text) {
+                            disconnect(m_cleanup, nullptr, this, nullptr);
+                            QString out = text;
+                            if (opts.trailingSpace && !out.endsWith(QLatin1Char(' ')))
+                                out.append(QLatin1Char(' '));
+                            finalizeInjection(out, mode, fallback);
+                        });
+                connect(m_cleanup, &CleanupService::failed, this,
+                        [this, raw, cleanupLang, mode, fallback, opts](const QString& err) {
+                            disconnect(m_cleanup, nullptr, this, nullptr);
+                            std::fprintf(stderr,
+                                         "[DictaPulse] cleanup failed: %s — falling back to rules\n",
+                                         qUtf8Printable(err));
+                            std::fflush(stderr);
+                            emit notify(tr("DictaPulse"),
+                                        tr("Cleanup failed (%1) — inserted lightly-cleaned text").arg(err));
+                            finalizeInjection(m_text->process(raw, cleanupLang, opts), mode, fallback);
+                        });
+                m_cleanup->process(raw, cleanupLang, cfg);
+                return;
             }
-            setState("idle", detail);
+
+            QString out;
+            if (provider == QLatin1String("none")) {
+                out = raw;
+                if (opts.trailingSpace && !out.endsWith(QLatin1Char(' ')))
+                    out.append(QLatin1Char(' '));
+            } else { // "rules" (default) or anything unrecognized
+                out = m_text->process(raw, cleanupLang, opts);
+            }
+            finalizeInjection(out, mode, fallback);
         }, Qt::QueuedConnection);
     }, Qt::QueuedConnection);
+}
+
+void Controller::finalizeInjection(const QString& text, const QString& mode, bool fallback)
+{
+    m_lastTranscript = text;
+    emit lastTranscriptChanged();
+
+    const auto inj = m_platform->injectText(text, mode, fallback);
+    const char* injStr = inj == PlatformAdapter::InjectResult::Inserted ? "Inserted"
+                       : inj == PlatformAdapter::InjectResult::ClipboardOnly ? "ClipboardOnly"
+                       : "Failed";
+    std::fprintf(stderr,
+                 "[DictaPulse] inject mode='%s' fallback=%d result=%s chars=%lld\n",
+                 qUtf8Printable(mode), fallback, injStr,
+                 static_cast<long long>(text.size()));
+    std::fflush(stderr);
+    QString detail;
+    switch (inj) {
+    case PlatformAdapter::InjectResult::Inserted:
+        detail = tr("Inserted (%1 chars)").arg(text.size());
+        break;
+    case PlatformAdapter::InjectResult::ClipboardOnly:
+        detail = tr("Copied to clipboard");
+        emit notify(tr("DictaPulse"), tr("Copied %1 characters to clipboard").arg(text.size()));
+        break;
+    case PlatformAdapter::InjectResult::Failed:
+        detail = tr("Insertion failed");
+        emit notify(tr("DictaPulse"), tr("Could not insert text — copied to clipboard"));
+        break;
+    }
+    setState("idle", detail);
 }
 
 } // namespace dictapulse

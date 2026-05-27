@@ -43,6 +43,10 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS
 qt_standard_project_setup(REQUIRES 6.6)
 qt_policy(SET QTP0004 NEW)
 
+# Secure storage for LLM API keys (KWallet/libsecret on Linux, Credential
+# Manager on Windows, Keychain on macOS — same API across all three).
+find_package(Qt6Keychain REQUIRED)
+
 # ---- Optional: KDE Frameworks 6 ----
 set(DICTAPULSE_HAVE_KF6 FALSE)
 if(UNIX AND NOT APPLE)

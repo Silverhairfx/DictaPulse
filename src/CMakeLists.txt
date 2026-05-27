@@ -8,6 +8,7 @@ set(DICTAPULSE_QML_FILES
     "${DICTAPULSE_QML_DIR}/pages/ModelsPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/LanguagePage.qml"
     "${DICTAPULSE_QML_DIR}/pages/OutputPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/CleanupPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/BackendPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/OverlayAppearancePage.qml"
     "${DICTAPULSE_QML_DIR}/pages/PrivacyPage.qml"
@@ -55,6 +56,10 @@ qt_add_executable(dictapulse
     core/models/ModelManager.cpp
     core/text/TextProcessor.h
     core/text/TextProcessor.cpp
+    core/cleanup/CleanupService.h
+    core/cleanup/CleanupService.cpp
+    core/cleanup/SecretStore.h
+    core/cleanup/SecretStore.cpp
     core/hardware/HardwareInfo.h
     core/hardware/HardwareInfo.cpp
     platform/PlatformAdapter.h
@@ -87,6 +92,7 @@ target_link_libraries(dictapulse PRIVATE
     Qt6::Svg
     Qt6::Network
     Qt6::DBus
+    Qt6Keychain::Qt6Keychain
     whisper
 )
 

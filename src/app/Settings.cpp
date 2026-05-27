@@ -50,6 +50,19 @@ constexpr auto kSoundEffects = "app/soundEffects";
 constexpr auto kTheme = "app/theme";
 constexpr auto kTelemetry = "privacy/telemetry";
 constexpr auto kStoreRecordings = "privacy/storeRecordings";
+constexpr auto kCleanupProvider = "cleanup/provider";
+constexpr auto kCleanupLocalPreset = "cleanup/localPreset";
+constexpr auto kCleanupLocalEndpoint = "cleanup/localEndpoint";
+constexpr auto kCleanupLocalModel = "cleanup/localModel";
+constexpr auto kCleanupRemoteProvider = "cleanup/remoteProvider";
+constexpr auto kCleanupRemoteModel = "cleanup/remoteModel";
+constexpr auto kCleanupRemoteEndpoint = "cleanup/remoteEndpoint";
+constexpr auto kCleanupSystemPrompt = "cleanup/systemPrompt";
+constexpr auto kCleanupUseVocab = "cleanup/useVocab";
+constexpr auto kDefaultCleanupPrompt =
+    "Clean up this voice-dictation transcription. Fix punctuation and "
+    "capitalization. Preserve the speaker's dialect, names, and meaning. Do not "
+    "paraphrase, translate, answer, or add anything. Return only the cleaned text.";
 } // namespace
 
 Settings::Settings(QObject* parent)
@@ -147,6 +160,16 @@ DICTAPULSE_SETTING_STR(theme, setTheme, kTheme, "system", themeChanged)
 DICTAPULSE_SETTING_BOOL(telemetryEnabled, setTelemetryEnabled, kTelemetry, false, telemetryEnabledChanged)
 DICTAPULSE_SETTING_BOOL(storeRecordings, setStoreRecordings, kStoreRecordings, false, storeRecordingsChanged)
 
+DICTAPULSE_SETTING_STR(cleanupProvider, setCleanupProvider, kCleanupProvider, "rules", cleanupProviderChanged)
+DICTAPULSE_SETTING_STR(cleanupLocalPreset, setCleanupLocalPreset, kCleanupLocalPreset, "lmstudio", cleanupLocalPresetChanged)
+DICTAPULSE_SETTING_STR(cleanupLocalEndpoint, setCleanupLocalEndpoint, kCleanupLocalEndpoint, "http://localhost:1234/v1", cleanupLocalEndpointChanged)
+DICTAPULSE_SETTING_STR(cleanupLocalModel, setCleanupLocalModel, kCleanupLocalModel, "", cleanupLocalModelChanged)
+DICTAPULSE_SETTING_STR(cleanupRemoteProvider, setCleanupRemoteProvider, kCleanupRemoteProvider, "anthropic", cleanupRemoteProviderChanged)
+DICTAPULSE_SETTING_STR(cleanupRemoteModel, setCleanupRemoteModel, kCleanupRemoteModel, "claude-haiku-4-5", cleanupRemoteModelChanged)
+DICTAPULSE_SETTING_STR(cleanupRemoteEndpoint, setCleanupRemoteEndpoint, kCleanupRemoteEndpoint, "", cleanupRemoteEndpointChanged)
+DICTAPULSE_SETTING_STR(cleanupSystemPrompt, setCleanupSystemPrompt, kCleanupSystemPrompt, kDefaultCleanupPrompt, cleanupSystemPromptChanged)
+DICTAPULSE_SETTING_BOOL(cleanupUseVocab, setCleanupUseVocab, kCleanupUseVocab, true, cleanupUseVocabChanged)
+
 QStringList Settings::enabledLanguages() const
 {
     return m_store.value(kEnabledLanguages, QStringList { "en" }).toStringList();
@@ -201,6 +224,15 @@ void Settings::resetToDefaults()
     emit themeChanged();
     emit telemetryEnabledChanged();
     emit storeRecordingsChanged();
+    emit cleanupProviderChanged();
+    emit cleanupLocalPresetChanged();
+    emit cleanupLocalEndpointChanged();
+    emit cleanupLocalModelChanged();
+    emit cleanupRemoteProviderChanged();
+    emit cleanupRemoteModelChanged();
+    emit cleanupRemoteEndpointChanged();
+    emit cleanupSystemPromptChanged();
+    emit cleanupUseVocabChanged();
 }
 
 } // namespace dictapulse

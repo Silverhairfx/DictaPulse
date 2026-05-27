@@ -34,6 +34,7 @@ ApplicationWindow {
         { label: qsTr("Models"),        emoji: "✦", file: "pages/ModelsPage.qml" },
         { label: qsTr("Language"),      emoji: "🌐", file: "pages/LanguagePage.qml" },
         { label: qsTr("Output"),        emoji: "↪", file: "pages/OutputPage.qml" },
+        { label: qsTr("Cleanup"),       emoji: "✨", file: "pages/CleanupPage.qml" },
         { label: qsTr("Backend"),       emoji: "⚙", file: "pages/BackendPage.qml" },
         { label: qsTr("Overlay"),       emoji: "◐", file: "pages/OverlayAppearancePage.qml" },
         { label: qsTr("Privacy"),       emoji: "🔒", file: "pages/PrivacyPage.qml" },

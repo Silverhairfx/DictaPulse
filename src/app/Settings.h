@@ -48,6 +48,16 @@ class Settings : public QObject {
     Q_PROPERTY(bool telemetryEnabled READ telemetryEnabled WRITE setTelemetryEnabled NOTIFY telemetryEnabledChanged)
     Q_PROPERTY(bool storeRecordings READ storeRecordings WRITE setStoreRecordings NOTIFY storeRecordingsChanged)
 
+    Q_PROPERTY(QString cleanupProvider READ cleanupProvider WRITE setCleanupProvider NOTIFY cleanupProviderChanged)
+    Q_PROPERTY(QString cleanupLocalPreset READ cleanupLocalPreset WRITE setCleanupLocalPreset NOTIFY cleanupLocalPresetChanged)
+    Q_PROPERTY(QString cleanupLocalEndpoint READ cleanupLocalEndpoint WRITE setCleanupLocalEndpoint NOTIFY cleanupLocalEndpointChanged)
+    Q_PROPERTY(QString cleanupLocalModel READ cleanupLocalModel WRITE setCleanupLocalModel NOTIFY cleanupLocalModelChanged)
+    Q_PROPERTY(QString cleanupRemoteProvider READ cleanupRemoteProvider WRITE setCleanupRemoteProvider NOTIFY cleanupRemoteProviderChanged)
+    Q_PROPERTY(QString cleanupRemoteModel READ cleanupRemoteModel WRITE setCleanupRemoteModel NOTIFY cleanupRemoteModelChanged)
+    Q_PROPERTY(QString cleanupRemoteEndpoint READ cleanupRemoteEndpoint WRITE setCleanupRemoteEndpoint NOTIFY cleanupRemoteEndpointChanged)
+    Q_PROPERTY(QString cleanupSystemPrompt READ cleanupSystemPrompt WRITE setCleanupSystemPrompt NOTIFY cleanupSystemPromptChanged)
+    Q_PROPERTY(bool cleanupUseVocab READ cleanupUseVocab WRITE setCleanupUseVocab NOTIFY cleanupUseVocabChanged)
+
 public:
     explicit Settings(QObject* parent = nullptr);
 
@@ -138,6 +148,25 @@ public:
     bool storeRecordings() const;
     void setStoreRecordings(bool value);
 
+    QString cleanupProvider() const;
+    void setCleanupProvider(const QString& value);
+    QString cleanupLocalPreset() const;
+    void setCleanupLocalPreset(const QString& value);
+    QString cleanupLocalEndpoint() const;
+    void setCleanupLocalEndpoint(const QString& value);
+    QString cleanupLocalModel() const;
+    void setCleanupLocalModel(const QString& value);
+    QString cleanupRemoteProvider() const;
+    void setCleanupRemoteProvider(const QString& value);
+    QString cleanupRemoteModel() const;
+    void setCleanupRemoteModel(const QString& value);
+    QString cleanupRemoteEndpoint() const;
+    void setCleanupRemoteEndpoint(const QString& value);
+    QString cleanupSystemPrompt() const;
+    void setCleanupSystemPrompt(const QString& value);
+    bool cleanupUseVocab() const;
+    void setCleanupUseVocab(bool value);
+
     Q_INVOKABLE void resetToDefaults();
 
 signals:
@@ -179,6 +208,15 @@ signals:
     void themeChanged();
     void telemetryEnabledChanged();
     void storeRecordingsChanged();
+    void cleanupProviderChanged();
+    void cleanupLocalPresetChanged();
+    void cleanupLocalEndpointChanged();
+    void cleanupLocalModelChanged();
+    void cleanupRemoteProviderChanged();
+    void cleanupRemoteModelChanged();
+    void cleanupRemoteEndpointChanged();
+    void cleanupSystemPromptChanged();
+    void cleanupUseVocabChanged();
 
 private:
     QSettings m_store;

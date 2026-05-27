@@ -1,6 +1,8 @@
 #include "app/Controller.h"
 #include "app/Settings.h"
 #include "app/ThemeProvider.h"
+#include "core/cleanup/CleanupService.h"
+#include "core/cleanup/SecretStore.h"
 #include "core/hardware/HardwareInfo.h"
 #include "core/models/ModelManager.h"
 #include "platform/linux/LinuxAdapter.h"
@@ -129,7 +131,14 @@ int main(int argc, char* argv[])
                      platform, [platform, settings]() {
                          platform->setAnimationEnabled(settings->trayIconAnimation());
                      });
-    auto* controller = new dictapulse::Controller(settings, models, hardware, platform, &app);
+    // Secure API-key store + async LLM cleanup. Preload remote-provider keys
+    // from the OS keyring so they're available synchronously at request time.
+    auto* secrets = new dictapulse::SecretStore(&app);
+    secrets->preload({QStringLiteral("anthropic"), QStringLiteral("openai"), QStringLiteral("custom")});
+    auto* cleanup = new dictapulse::CleanupService(&app);
+
+    auto* controller = new dictapulse::Controller(settings, models, hardware, platform,
+                                                  cleanup, secrets, &app);
 
     // Wire notifications: the controller emits notify(); route it to the tray
     // notification, gated by the user's "notifications" toggle. (Previously the
@@ -172,6 +181,7 @@ int main(int argc, char* argv[])
     engine.rootContext()->setContextProperty("appSettings", settings);
     engine.rootContext()->setContextProperty("modelManager", models);
     engine.rootContext()->setContextProperty("hardwareInfo", hardware);
+    engine.rootContext()->setContextProperty("secrets", secrets);
 
     QObject::connect(
         &engine,

@@ -13,7 +13,9 @@
 namespace dictapulse {
 
 class AudioCapture;
+class CleanupService;
 class PlatformAdapter;
+class SecretStore;
 class TextProcessor;
 class WhisperEngine;
 
@@ -37,6 +39,8 @@ public:
                         ModelManager* models,
                         HardwareInfo* hardware,
                         PlatformAdapter* platform,
+                        CleanupService* cleanup,
+                        SecretStore* secrets,
                         QObject* parent = nullptr);
     ~Controller() override;
 
@@ -88,12 +92,15 @@ private:
     void setState(const QString& newState, const QString& status);
     void setError(const QString& err);
     void runTranscription();
+    void finalizeInjection(const QString& text, const QString& mode, bool fallback);
     QString activeLanguage() const;
 
     Settings* m_settings;
     ModelManager* m_models;
     HardwareInfo* m_hardware;
     PlatformAdapter* m_platform;
+    CleanupService* m_cleanup = nullptr;
+    SecretStore* m_secrets = nullptr;
     AudioCapture* m_capture = nullptr;
     WhisperEngine* m_engine = nullptr;
     TextProcessor* m_text = nullptr;

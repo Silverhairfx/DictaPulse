@@ -28,6 +28,19 @@ QString TextProcessor::process(const QString& raw, const QString& language, cons
         text.replace(multiSpace, QStringLiteral(" "));
     }
 
+    // Arabic punctuation layer: Whisper emits Latin punctuation even for Arabic.
+    // Map to the Arabic forms and tighten spacing. Letter-level corrections are
+    // left to the LLM cleanup providers — touching them here risks changing the
+    // user's intended spelling.
+    if (opts.cleanup && language.startsWith(QLatin1String("ar"))) {
+        text.replace(QChar('?'), QChar(0x061F));  // ؟ Arabic question mark
+        text.replace(QChar(','), QChar(0x060C));  // ، Arabic comma
+        text.replace(QChar(';'), QChar(0x061B));  // ؛ Arabic semicolon
+        static const QRegularExpression spaceBeforeAr(
+            QStringLiteral("\\s+([\\x{060C}\\x{061B}\\x{061F}])"));
+        text.replace(spaceBeforeAr, QStringLiteral("\\1"));
+    }
+
     if (opts.removeFillers && (language.startsWith("en") || language.isEmpty())) {
         static const QStringList fillers = { "um", "uh", "erm", "uhh", "umm", "mm", "hmm" };
         const QStringList words = text.split(QRegularExpression(R"(\s+)"), Qt::SkipEmptyParts);
