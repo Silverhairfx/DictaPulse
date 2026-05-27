@@ -53,10 +53,78 @@ ScrollView {
             }
 
             SettingRow {
+                label: qsTr("Size")
+                hint: qsTr("Adjust the overall size of the floating pill. Preview below.")
+                ColumnLayout {
+                    spacing: 10
+                    RowLayout {
+                        spacing: 8
+                        Slider {
+                            id: scaleSlider
+                            from: 0.5; to: 1.5; stepSize: 0.05
+                            value: appSettings.overlayScale
+                            onMoved: appSettings.overlayScale = value
+                            Layout.preferredWidth: 200
+                        }
+                        Label {
+                            text: Math.round(appSettings.overlayScale * 100) + "%"
+                            color: Theme.textDim
+                            Layout.preferredWidth: 48
+                        }
+                    }
+                    // Live preview rendered at the actual size the overlay will use.
+                    Rectangle {
+                        Layout.preferredWidth: Math.round(360 * appSettings.overlayScale)
+                        Layout.preferredHeight: Math.round(60 * appSettings.overlayScale)
+                        radius: height / 2
+                        color: Theme.overlayBg
+                        border.color: Theme.accent
+                        border.width: 1
+                        opacity: appSettings.overlayOpacity
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: Math.round(14 * appSettings.overlayScale)
+                            anchors.rightMargin: Math.round(14 * appSettings.overlayScale)
+                            spacing: Math.round(8 * appSettings.overlayScale)
+                            Rectangle {
+                                Layout.preferredWidth: Math.round(10 * appSettings.overlayScale)
+                                Layout.preferredHeight: Math.round(10 * appSettings.overlayScale)
+                                radius: width / 2
+                                color: Theme.danger
+                            }
+                            Waveform {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                Layout.topMargin: Math.round(6 * appSettings.overlayScale)
+                                Layout.bottomMargin: Math.round(6 * appSettings.overlayScale)
+                                level: 0.45
+                                color: Theme.accent
+                            }
+                            Label {
+                                text: "AUTO"
+                                color: Theme.textDim
+                                font.pixelSize: Math.round(11 * appSettings.overlayScale)
+                                font.weight: Font.Medium
+                            }
+                        }
+                    }
+                }
+            }
+
+            SettingRow {
                 label: qsTr("Show waveform animation")
                 Switch {
                     checked: appSettings.overlayWaveform
                     onToggled: appSettings.overlayWaveform = checked
+                }
+            }
+
+            SettingRow {
+                label: qsTr("Sound alerts")
+                hint: qsTr("Play a rising tone when listening starts and a falling tone when it stops — an audible (and accessible) cue. Independent of the visual overlay.")
+                Switch {
+                    checked: appSettings.overlaySounds
+                    onToggled: appSettings.overlaySounds = checked
                 }
             }
 

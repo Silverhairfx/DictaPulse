@@ -2,83 +2,93 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
+import QtMultimedia
 import DictaPulse
 
 Window {
     id: overlayWin
+    objectName: "overlayWin"
 
-    // Wayland is restrictive about always-on-top / frameless windows.
-    // FramelessWindowHint + WindowStaysOnTopHint is the most we can portably
-    // request. Qt.Tool keeps it out of the taskbar/task switcher.
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
+    // Distinct title so a KWin window rule (written by main.cpp) can target ONLY
+    // this window and force bottom-center + keep-above placement.
+    title: "DictaPulse Listening Overlay"
+
+    // Declared inside the main ApplicationWindow, this would default to being a
+    // transient child — which on Wayland won't map while the parent is hidden
+    // (e.g. when startMinimized hides the settings window). Detach it so the
+    // overlay is an independent top-level that maps regardless of the main window.
+    transientParent: null
+
+    // WindowTransparentForInput is load-bearing: the window stays mapped at all
+    // times (Qt-on-Wayland fails to *re-map* a QQuickWindow after it's been
+    // hidden once — the second show() never reappears). Keeping it permanently
+    // mapped sidesteps that bug; input-transparency means it never steals focus
+    // and clicks pass straight through to whatever is underneath.
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
     color: "transparent"
 
-    width: 360
-    height: 60
-    visible: false
+    readonly property real baseWidth: 360
+    readonly property real baseHeight: 60
+    width: Math.round(baseWidth * appSettings.overlayScale)
+    height: Math.round(baseHeight * appSettings.overlayScale)
+
+    // Mapped whenever the overlay feature is on; visual presence is driven by
+    // the pill's opacity below, NOT by mapping/unmapping the window.
+    visible: appSettings.overlayEnabled
     opacity: appSettings.overlayOpacity
 
-    function showOverlay() {
-        if (!appSettings.overlayEnabled) return
-        positionWindow()
-        visible = true
-        fadeIn.restart()
+    readonly property bool active: controller.state === "listening"
+                                 || controller.state === "processing"
+
+    // Kept for Main.qml compatibility; the pop sounds fire here, but show/hide
+    // is now purely the opacity animation reacting to controller.state.
+    function showOverlay() { raise() }
+    function hideOverlay() {}
+
+    SoundEffect {
+        id: popIn
+        source: "qrc:/qt/qml/DictaPulse/sounds/pop-in.wav"
+        volume: 0.9
     }
-    function hideOverlay() {
-        if (!visible) return
-        fadeOut.restart()
-    }
-    function positionWindow() {
-        const screen = Qt.application.screens[0]
-        if (!screen) return
-        const sw = screen.geometry.width
-        const sh = screen.geometry.height
-        const pos = appSettings.overlayPosition
-        let x = (sw - width) / 2
-        let y = sh - height - 100
-        if (pos === "top-center") y = 80
-        if (pos === "cursor") {
-            x = Math.min(sw - width - 20, Math.max(20, sw / 2 - width / 2))
-            y = Math.min(sh - height - 80, Math.max(80, sh / 2))
-        }
-        overlayWin.x = x + screen.geometry.x
-        overlayWin.y = y + screen.geometry.y
+    SoundEffect {
+        id: popOut
+        source: "qrc:/qt/qml/DictaPulse/sounds/pop-out.wav"
+        volume: 0.9
     }
 
-    NumberAnimation {
-        id: fadeIn
-        target: overlayWin; property: "opacity"
-        from: 0.0; to: appSettings.overlayOpacity
-        duration: 160
-    }
-    NumberAnimation {
-        id: fadeOut
-        target: overlayWin; property: "opacity"
-        to: 0.0; duration: 180
-        onFinished: overlayWin.visible = false
+    // Play the pops as the overlay becomes/stops being active, so they signal
+    // "now listening" / "stopped" — useful as a non-visual cue (accessibility).
+    onActiveChanged: {
+        if (!appSettings.overlaySounds) return
+        if (active) popIn.play()
+        else        popOut.play()
     }
 
     Rectangle {
         id: pill
         anchors.fill: parent
-        radius: 30
-        color: Theme.overlayBg
-        border.color: controller.state === "listening" ? Theme.accent
-                     : controller.state === "processing" ? Theme.warning
-                     : Theme.border
-        border.width: 1
+        radius: height / 2
+        color: "black"          // solid black background, no border
+        border.width: 0
+
+        // Fade the content in/out instead of mapping the window.
+        opacity: overlayWin.active ? 1.0 : 0.0
+        Behavior on opacity { NumberAnimation { duration: 160 } }
+
+        readonly property real scale: appSettings.overlayScale
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 16
-            anchors.rightMargin: 16
-            spacing: 10
+            anchors.leftMargin: Math.round(14 * pill.scale)
+            anchors.rightMargin: Math.round(14 * pill.scale)
+            spacing: Math.round(8 * pill.scale)
 
+            // Record button: solid red dot, pulses while listening.
             Rectangle {
-                width: 10; height: 10; radius: 5
-                color: controller.state === "listening" ? Theme.danger
-                     : controller.state === "processing" ? Theme.warning
-                     : Theme.textDim
+                Layout.preferredWidth: Math.round(12 * pill.scale)
+                Layout.preferredHeight: Math.round(12 * pill.scale)
+                radius: width / 2
+                color: "#ff3b30"
                 SequentialAnimation on opacity {
                     running: controller.state === "listening"
                     loops: Animation.Infinite
@@ -87,30 +97,18 @@ Window {
                 }
             }
 
+            // White waveform, no text label. Minimal vertical margin so the
+            // bars can vibrate nearly the full pill height.
             Waveform {
                 visible: appSettings.overlayWaveform
                 Layout.fillWidth: true
-                Layout.preferredHeight: 28
+                Layout.fillHeight: true
+                Layout.topMargin: Math.round(4 * pill.scale)
+                Layout.bottomMargin: Math.round(4 * pill.scale)
                 level: controller.level
-                color: Theme.accent
+                color: "white"
                 reduceMotion: appSettings.overlayReduceMotion
             }
-
-            Label {
-                text: controller.state === "processing" ? qsTr("Transcribing…")
-                    : controller.state === "listening" ? (appSettings.autoDetectLanguage ? "AUTO" : appSettings.defaultLanguage.toUpperCase())
-                    : controller.state === "error" ? qsTr("Error")
-                    : qsTr("Ready")
-                color: Theme.textDim
-                font.pixelSize: 11
-                font.weight: Font.Medium
-            }
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: controller.toggleDictation()
         }
     }
 }

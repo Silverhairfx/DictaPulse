@@ -28,21 +28,26 @@ constexpr auto kVadThreshold = "dictation/vadThreshold";
 constexpr auto kAutoGain = "audio/autoGain";
 constexpr auto kInputGain = "audio/inputGain";
 constexpr auto kOverlayEnabled = "overlay/enabled";
-constexpr auto kCloseToTray = "general/closeToTray";
-constexpr auto kTrayAnimation = "general/trayAnimation";
+// NOTE: avoid the literal "general/" group — QSettings reserves "General"
+// (case-insensitively) for ungrouped keys and round-trips it asymmetrically in
+// IniFormat (writes to [%General] but reads back the default). Use "app/".
+constexpr auto kCloseToTray = "app/closeToTray";
+constexpr auto kTrayAnimation = "app/trayAnimation";
 constexpr auto kOverlayPosition = "overlay/position";
 constexpr auto kOverlayOpacity = "overlay/opacity";
+constexpr auto kOverlayScale = "overlay/scale";
 constexpr auto kOverlayWaveform = "overlay/waveform";
+constexpr auto kOverlaySounds = "overlay/sounds";
 constexpr auto kOverlayReduceMotion = "overlay/reduceMotion";
 constexpr auto kCleanupEnabled = "text/cleanup";
 constexpr auto kCapitalize = "text/capitalize";
 constexpr auto kRemoveFillers = "text/removeFillers";
 constexpr auto kTrailingSpace = "text/trailingSpace";
-constexpr auto kLaunchStartup = "general/launchAtStartup";
-constexpr auto kStartMinimized = "general/startMinimized";
-constexpr auto kNotifications = "general/notifications";
-constexpr auto kSoundEffects = "general/soundEffects";
-constexpr auto kTheme = "general/theme";
+constexpr auto kLaunchStartup = "app/launchAtStartup";
+constexpr auto kStartMinimized = "app/startMinimized";
+constexpr auto kNotifications = "app/notifications";
+constexpr auto kSoundEffects = "app/soundEffects";
+constexpr auto kTheme = "app/theme";
 constexpr auto kTelemetry = "privacy/telemetry";
 constexpr auto kStoreRecordings = "privacy/storeRecordings";
 } // namespace
@@ -126,7 +131,9 @@ DICTAPULSE_SETTING_BOOL(closeToTray, setCloseToTray, kCloseToTray, true, closeTo
 DICTAPULSE_SETTING_BOOL(trayIconAnimation, setTrayIconAnimation, kTrayAnimation, true, trayIconAnimationChanged)
 DICTAPULSE_SETTING_STR(overlayPosition, setOverlayPosition, kOverlayPosition, "bottom-center", overlayPositionChanged)
 DICTAPULSE_SETTING_DBL(overlayOpacity, setOverlayOpacity, kOverlayOpacity, 0.95, overlayOpacityChanged)
+DICTAPULSE_SETTING_DBL(overlayScale, setOverlayScale, kOverlayScale, 0.8, overlayScaleChanged)
 DICTAPULSE_SETTING_BOOL(overlayWaveform, setOverlayWaveform, kOverlayWaveform, true, overlayWaveformChanged)
+DICTAPULSE_SETTING_BOOL(overlaySounds, setOverlaySounds, kOverlaySounds, true, overlaySoundsChanged)
 DICTAPULSE_SETTING_BOOL(overlayReduceMotion, setOverlayReduceMotion, kOverlayReduceMotion, false, overlayReduceMotionChanged)
 DICTAPULSE_SETTING_BOOL(cleanupEnabled, setCleanupEnabled, kCleanupEnabled, true, cleanupEnabledChanged)
 DICTAPULSE_SETTING_BOOL(capitalizeSentences, setCapitalizeSentences, kCapitalize, true, capitalizeSentencesChanged)
@@ -179,7 +186,9 @@ void Settings::resetToDefaults()
     emit trayIconAnimationChanged();
     emit overlayPositionChanged();
     emit overlayOpacityChanged();
+    emit overlayScaleChanged();
     emit overlayWaveformChanged();
+    emit overlaySoundsChanged();
     emit overlayReduceMotionChanged();
     emit cleanupEnabledChanged();
     emit capitalizeSentencesChanged();

@@ -27,11 +27,13 @@ Item {
         running: true
         repeat: true
         onTriggered: {
-            const target = Math.min(1.0, root.level * 6.0)
-            ampState.smoothed = ampState.smoothed * 0.7 + target * 0.3
+            // Higher gain (was 6) so normal speech drives the bars near full
+            // height; light smoothing so peaks pop instead of being averaged out.
+            const target = Math.min(1.0, root.level * 14.0)
+            ampState.smoothed = ampState.smoothed * 0.55 + target * 0.45
             const a = ampState.amps.slice(1)
-            const jitter = (Math.random() - 0.5) * 0.45
-            a.push(Math.max(0.06, Math.min(1.0, ampState.smoothed + jitter * Math.max(0.15, ampState.smoothed))))
+            const jitter = (Math.random() - 0.5) * 0.6
+            a.push(Math.max(0.08, Math.min(1.0, ampState.smoothed + jitter * Math.max(0.25, ampState.smoothed))))
             ampState.amps = a
         }
     }
@@ -47,12 +49,13 @@ Item {
             delegate: Rectangle {
                 required property int index
                 width: (row.width - row.spacing * (root.bars - 1)) / root.bars
-                height: Math.max(2, (ampState.amps[index] || 0.05) * (row.height - 4))
+                // Use the full available height so the bars vibrate tall.
+                height: Math.max(2, (ampState.amps[index] || 0.05) * row.height)
                 anchors.verticalCenter: parent.verticalCenter
                 radius: width / 2
                 color: root.color
-                opacity: 0.5 + 0.5 * (ampState.amps[index] || 0.05)
-                Behavior on height { NumberAnimation { duration: root.reduceMotion ? 0 : 80 } }
+                opacity: 0.55 + 0.45 * (ampState.amps[index] || 0.05)
+                Behavior on height { NumberAnimation { duration: root.reduceMotion ? 0 : 70 } }
             }
         }
     }

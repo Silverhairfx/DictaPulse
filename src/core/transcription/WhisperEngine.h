@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 #include <memory>
 #include <vector>
@@ -37,7 +38,8 @@ public:
                       const QString& language,
                       bool autoDetect,
                       int threads,
-                      bool translate = false);
+                      bool translate = false,
+                      const QStringList& candidateLangs = {});
 
 signals:
     void modelLoaded(const QString& path);

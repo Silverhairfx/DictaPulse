@@ -160,8 +160,13 @@ ApplicationWindow {
     Connections {
         target: controller
         function onOverlayRequested(show) {
+            console.log("[Main] onOverlayRequested(" + show + ") fired")
             if (show) overlay.showOverlay()
             else      overlay.hideOverlay()
         }
+    }
+    Component.onCompleted: {
+        console.log("[Main] Component.onCompleted; controller=" + controller
+                    + " overlay=" + overlay)
     }
 }

@@ -37,6 +37,13 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg"
     PROPERTIES QT_RESOURCE_ALIAS icons/dictapulse.svg
 )
 
+set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/sounds/pop-in.wav"
+    PROPERTIES QT_RESOURCE_ALIAS sounds/pop-in.wav
+)
+set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/sounds/pop-out.wav"
+    PROPERTIES QT_RESOURCE_ALIAS sounds/pop-out.wav
+)
+
 qt_add_executable(dictapulse
     main.cpp
     app/Settings.h
@@ -70,6 +77,8 @@ qt_add_qml_module(dictapulse
     QML_FILES ${DICTAPULSE_QML_FILES}
     RESOURCES
         ${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg
+        ${CMAKE_SOURCE_DIR}/resources/sounds/pop-in.wav
+        ${CMAKE_SOURCE_DIR}/resources/sounds/pop-out.wav
 )
 
 target_link_libraries(dictapulse PRIVATE
@@ -95,6 +104,15 @@ if(DICTAPULSE_HAVE_KF6)
         KF6::ConfigGui
     )
     target_compile_definitions(dictapulse PRIVATE DICTAPULSE_HAVE_KF6)
+endif()
+
+# LayerShellQt is the only reliable way to spawn a non-focusing always-on-top
+# overlay surface under KWin/Plasma 6 Wayland. Regular QML Window items get
+# blocked or invisibly mapped, even with FramelessWindowHint + WindowStaysOnTopHint.
+find_package(LayerShellQt QUIET)
+if(TARGET LayerShellQt::Interface)
+    target_link_libraries(dictapulse PRIVATE LayerShellQt::Interface)
+    target_compile_definitions(dictapulse PRIVATE DICTAPULSE_HAVE_LAYERSHELL)
 endif()
 
 set_target_properties(dictapulse PROPERTIES

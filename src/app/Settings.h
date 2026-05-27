@@ -30,7 +30,9 @@ class Settings : public QObject {
     Q_PROPERTY(bool overlayEnabled READ overlayEnabled WRITE setOverlayEnabled NOTIFY overlayEnabledChanged)
     Q_PROPERTY(QString overlayPosition READ overlayPosition WRITE setOverlayPosition NOTIFY overlayPositionChanged)
     Q_PROPERTY(double overlayOpacity READ overlayOpacity WRITE setOverlayOpacity NOTIFY overlayOpacityChanged)
+    Q_PROPERTY(double overlayScale READ overlayScale WRITE setOverlayScale NOTIFY overlayScaleChanged)
     Q_PROPERTY(bool overlayWaveform READ overlayWaveform WRITE setOverlayWaveform NOTIFY overlayWaveformChanged)
+    Q_PROPERTY(bool overlaySounds READ overlaySounds WRITE setOverlaySounds NOTIFY overlaySoundsChanged)
     Q_PROPERTY(bool overlayReduceMotion READ overlayReduceMotion WRITE setOverlayReduceMotion NOTIFY overlayReduceMotionChanged)
     Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
     Q_PROPERTY(bool trayIconAnimation READ trayIconAnimation WRITE setTrayIconAnimation NOTIFY trayIconAnimationChanged)
@@ -98,8 +100,12 @@ public:
     void setOverlayPosition(const QString& value);
     double overlayOpacity() const;
     void setOverlayOpacity(double value);
+    double overlayScale() const;
+    void setOverlayScale(double value);
     bool overlayWaveform() const;
     void setOverlayWaveform(bool value);
+    bool overlaySounds() const;
+    void setOverlaySounds(bool value);
     bool overlayReduceMotion() const;
     void setOverlayReduceMotion(bool value);
     bool closeToTray() const;
@@ -156,7 +162,9 @@ signals:
     void overlayEnabledChanged();
     void overlayPositionChanged();
     void overlayOpacityChanged();
+    void overlayScaleChanged();
     void overlayWaveformChanged();
+    void overlaySoundsChanged();
     void overlayReduceMotionChanged();
     void closeToTrayChanged();
     void trayIconAnimationChanged();

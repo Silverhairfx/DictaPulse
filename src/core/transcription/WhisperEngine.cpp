@@ -5,6 +5,9 @@
 
 #include <whisper.h>
 
+#include <cstdio>
+#include <vector>
+
 namespace dictapulse {
 
 WhisperEngine::WhisperEngine(QObject* parent)
@@ -55,7 +58,8 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
                                                 const QString& language,
                                                 bool autoDetect,
                                                 int threads,
-                                                bool translate)
+                                                bool translate,
+                                                const QStringList& candidateLangs)
 {
     Result result;
     if (!m_ctx) {
@@ -65,6 +69,32 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     if (samples.empty()) {
         result.error = tr("Empty audio buffer");
         return result;
+    }
+
+    // Constrained auto-detect: whisper's open-set detector confuses Arabic with
+    // Hebrew/Farsi/Urdu on short colloquial clips. When the user has a small set
+    // of enabled languages, restrict detection to that set — compute the mel,
+    // ask whisper for per-language probabilities, and force the highest-scoring
+    // *enabled* language. This keeps en/ar working while never picking 'he'.
+    QString forcedLang;
+    if (autoDetect && candidateLangs.size() >= 2) {
+        const int nt = threads > 0 ? threads : 4;
+        if (whisper_pcm_to_mel(m_ctx, samples.data(), static_cast<int>(samples.size()), nt) == 0) {
+            std::vector<float> probs(static_cast<size_t>(whisper_lang_max_id()) + 1, 0.0f);
+            whisper_lang_auto_detect(m_ctx, 0, nt, probs.data());
+            float bestProb = -1.0f;
+            for (const QString& code : candidateLangs) {
+                const int id = whisper_lang_id(code.toUtf8().constData());
+                if (id >= 0 && id < static_cast<int>(probs.size()) && probs[id] > bestProb) {
+                    bestProb = probs[id];
+                    forcedLang = code;
+                }
+            }
+            std::fprintf(stderr, "[DictaPulse] constrained-detect: picked '%s' (p=%.3f) from %s\n",
+                         qUtf8Printable(forcedLang), bestProb,
+                         qUtf8Printable(candidateLangs.join(",")));
+            std::fflush(stderr);
+        }
     }
 
     whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
@@ -90,7 +120,11 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     params.logprob_thold = -1.5f;      // accept lower-confidence tokens
 
     const QByteArray langBytes = language.toUtf8();
-    if (autoDetect) {
+    const QByteArray forcedBytes = forcedLang.toUtf8();
+    if (!forcedLang.isEmpty()) {
+        // Constrained detection resolved the language to an enabled one.
+        params.language = forcedBytes.constData();
+    } else if (autoDetect) {
         // 'auto' is whisper.cpp's documented sentinel for "no prior". Without
         // this whisper.cpp keeps the default ('en'), which silently biases the
         // language detector toward English on short clips.
@@ -112,7 +146,9 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
         text += QString::fromUtf8(whisper_full_get_segment_text(m_ctx, i));
     }
 
-    if (autoDetect) {
+    if (!forcedLang.isEmpty()) {
+        result.detectedLanguage = forcedLang;
+    } else if (autoDetect) {
         const int langId = whisper_full_lang_id(m_ctx);
         if (langId >= 0) {
             result.detectedLanguage = QString::fromUtf8(whisper_lang_str(langId));

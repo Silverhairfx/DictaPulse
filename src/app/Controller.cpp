@@ -288,14 +288,17 @@ void Controller::runTranscription()
     opts.trailingSpace = m_settings->addTrailingSpace();
 
     const bool translate = m_settings->translateToEnglish();
+    // Restrict auto-detect to the languages the user actually enabled, so the
+    // detector can't drift to a wrong-but-similar language (e.g. Arabic→Hebrew).
+    const QStringList candidateLangs = autoDetect ? m_settings->enabledLanguages() : QStringList{};
 
     std::fprintf(stderr,
                  "[DictaPulse] captured %.2fs, peak RMS %.4f, threshold %.4f, translate=%d\n",
                  durationSec, peakRms, m_settings->vadThreshold(), translate);
     std::fflush(stderr);
 
-    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, translate]() mutable {
-        WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads, translate);
+    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, translate, candidateLangs]() mutable {
+        WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads, translate, candidateLangs);
         std::fprintf(stderr,
                      "[DictaPulse] whisper ok=%d lang='%s' text='%s'\n",
                      r.ok, qUtf8Printable(r.detectedLanguage), qUtf8Printable(r.text));
@@ -343,6 +346,14 @@ void Controller::runTranscription()
             emit lastTranscriptChanged();
 
             const auto inj = m_platform->injectText(polished, mode, fallback);
+            const char* injStr = inj == PlatformAdapter::InjectResult::Inserted ? "Inserted"
+                               : inj == PlatformAdapter::InjectResult::ClipboardOnly ? "ClipboardOnly"
+                               : "Failed";
+            std::fprintf(stderr,
+                         "[DictaPulse] inject mode='%s' fallback=%d result=%s chars=%lld\n",
+                         qUtf8Printable(mode), fallback, injStr,
+                         static_cast<long long>(polished.size()));
+            std::fflush(stderr);
             QString detail;
             switch (inj) {
             case PlatformAdapter::InjectResult::Inserted:

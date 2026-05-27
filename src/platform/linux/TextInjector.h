@@ -20,6 +20,8 @@ public:
 
     Result inject(const QString& text, const QString& mode, bool clipboardFallback);
 
+    static bool needsPasteRoute(const QString& text);
+
     bool wtypeAvailable() const { return m_hasWtype; }
     bool xdotoolAvailable() const { return m_hasXdotool; }
     bool ydotoolAvailable() const { return m_hasYdotool; }
@@ -31,6 +33,12 @@ private:
     bool typeViaYdotool(const QString& text);
     void copyToClipboard(const QString& text);
     bool sendPasteShortcut();
+
+    // KDE keyboard-layout switching (DBus) so paste keysyms aren't mangled
+    // by a non-Latin active layout.
+    static int currentKbLayout();
+    static int findLatinLayout();
+    static bool setKbLayout(int index);
 
     bool m_hasWtype = false;
     bool m_hasXdotool = false;
