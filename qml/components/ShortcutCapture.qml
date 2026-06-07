@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import DictaPulse
 
+// Shortcut recorder: a clay well that glows indigo while capturing.
 Item {
     id: root
 
@@ -14,23 +15,25 @@ Item {
     property string _liveText: ""
 
     implicitWidth: 220
-    implicitHeight: 34
+    implicitHeight: 36
 
     activeFocusOnTab: true
 
-    Rectangle {
+    ClaySurface {
         id: bg
         anchors.fill: parent
-        radius: 6
-        color: root.capturing ? Theme.accentSoft : Theme.bg
-        border.color: root.capturing ? Theme.accent
+        tier: "pressed"
+        radius: Theme.radiusSm
+        color: root.capturing ? Theme.accentSoft : Theme.bgWell
+        borderColor: root.capturing ? Theme.accent
                      : (root.activeFocus ? Theme.borderHi : Theme.border)
-        border.width: 1
+        borderWidth: root.capturing ? 1.5 : 1
+        Behavior on color { ColorAnimation { duration: 120 } }
 
         Label {
             id: display
             anchors.left: parent.left
-            anchors.leftMargin: 10
+            anchors.leftMargin: 11
             anchors.right: clearBtn.visible ? clearBtn.left : parent.right
             anchors.rightMargin: 6
             anchors.verticalCenter: parent.verticalCenter
@@ -41,7 +44,7 @@ Item {
             text: root.capturing
                   ? (root._liveText !== "" ? root._liveText + "…" : qsTr("Press a key combination…"))
                   : (root.sequence !== "" ? root.sequence : root.placeholder)
-            color: root.capturing ? Theme.accent
+            color: root.capturing ? Theme.accentSoftFg
                   : (root.sequence !== "" ? Theme.text : Theme.textDim)
         }
 
@@ -49,12 +52,23 @@ Item {
             id: clearBtn
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            anchors.rightMargin: 2
+            anchors.rightMargin: 3
             implicitWidth: 26
             implicitHeight: 26
             visible: root.sequence !== "" && !root.capturing
             text: "✕"
             font.pixelSize: 12
+            background: Rectangle {
+                radius: 7
+                color: clearBtn.hovered ? Theme.bgHover : "transparent"
+            }
+            contentItem: Label {
+                text: clearBtn.text
+                color: Theme.textDim
+                font.pixelSize: 12
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
             onClicked: {
                 root.sequence = ""
                 root.cleared()
@@ -69,7 +83,13 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton
-        onClicked: {
+        onClicked: function(mouse) {
+            // Let the clear button keep working: ignore clicks on its rect.
+            const p = mapToItem(clearBtn, mouse.x, mouse.y)
+            if (clearBtn.visible && clearBtn.contains(Qt.point(p.x, p.y))) {
+                clearBtn.clicked()
+                return
+            }
             if (!root.capturing) {
                 root.capturing = true
                 root._liveText = ""

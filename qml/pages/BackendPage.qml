@@ -44,7 +44,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Mode")
-                ComboBox {
+                ClayComboBox {
                     width: 220
                     model: [
                         { value: "cpu",    label: qsTr("CPU only") },
@@ -61,7 +61,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Acceleration API")
                 hint: qsTr("Used when compute mode is GPU or Hybrid.")
-                ComboBox {
+                ClayComboBox {
                     id: apiBox
                     width: 220
                     model: hardwareInfo.availableBackends()
@@ -76,7 +76,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("CPU threads")
                 hint: qsTr("More threads can speed up CPU transcription but use more power. Default is half of your logical cores.")
-                SpinBox {
+                ClaySpinBox {
                     from: 1
                     to: hardwareInfo.cpuThreads
                     value: appSettings.cpuThreads

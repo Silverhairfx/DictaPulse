@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import DictaPulse
 
@@ -14,7 +15,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Silence to auto-stop (ms)")
                 hint: qsTr("How long silence must continue before DictaPulse stops listening. Only used in toggle and auto-stop modes.")
-                SpinBox {
+                ClaySpinBox {
                     from: 200
                     to: 5000
                     stepSize: 100
@@ -24,7 +25,7 @@ ScrollView {
             }
             SettingRow {
                 label: qsTr("Max recording length (s)")
-                SpinBox {
+                ClaySpinBox {
                     from: 5
                     to: 600
                     value: appSettings.maxRecordingSeconds
@@ -36,7 +37,7 @@ ScrollView {
                 hint: qsTr("Higher = needs louder speech to count as voice. Lower = picks up quieter input but more false positives.")
                 Row {
                     spacing: 8
-                    Slider {
+                    ClaySlider {
                         from: 0.001
                         to: 0.05
                         stepSize: 0.001
@@ -58,7 +59,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Auto-normalize quiet mics")
                 hint: qsTr("Boosts captured audio so Whisper sees it in its training range (peak ≈ −6 dBFS). Quiet KDE/PipeWire mics return empty transcripts without this. Capped at 20× so true silence isn't amplified.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.autoGainEnabled
                     onToggled: appSettings.autoGainEnabled = checked
                 }
@@ -68,7 +69,7 @@ ScrollView {
                 hint: qsTr("Additional multiplier applied after auto-gain. Push higher if transcripts are still empty; pull down if you hear clipping. 1.0× = neutral.")
                 Row {
                     spacing: 8
-                    Slider {
+                    ClaySlider {
                         from: 0.5
                         to: 5.0
                         stepSize: 0.1
@@ -90,7 +91,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Launch on KDE startup")
                 hint: qsTr("Installs an autostart .desktop entry in ~/.config/autostart/. (You can change this from System Settings → Autostart too.)")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.launchAtStartup
                     onToggled: appSettings.launchAtStartup = checked
                 }
@@ -98,7 +99,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Start minimized to tray")
                 hint: qsTr("Skip showing the settings window on launch. The tray icon still appears.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.startMinimized
                     onToggled: appSettings.startMinimized = checked
                 }
@@ -106,7 +107,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Close button minimizes to tray")
                 hint: qsTr("If off, the X button quits DictaPulse instead of hiding it to the tray.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.closeToTray
                     onToggled: appSettings.closeToTray = checked
                 }
@@ -114,14 +115,14 @@ ScrollView {
             SettingRow {
                 label: qsTr("Animate tray icon")
                 hint: qsTr("Pulses the tray icon while listening or transcribing. Useful when the floating overlay is disabled.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.trayIconAnimation
                     onToggled: appSettings.trayIconAnimation = checked
                 }
             }
             SettingRow {
                 label: qsTr("Notifications")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.notificationsEnabled
                     onToggled: appSettings.notificationsEnabled = checked
                 }
@@ -132,8 +133,9 @@ ScrollView {
             title: qsTr("Danger zone")
             RowLayout {
                 Layout.fillWidth: true
-                Button {
+                ClayButton {
                     text: qsTr("Reset all settings")
+                    variant: "destructive"
                     onClicked: confirmReset.open()
                 }
                 Item { Layout.fillWidth: true }
@@ -141,13 +143,14 @@ ScrollView {
         }
     }
 
-    Dialog {
+    ClayDialog {
         id: confirmReset
+        anchors.centerIn: Controls.Overlay.overlay
         title: qsTr("Reset all settings?")
         standardButtons: Dialog.Ok | Dialog.Cancel
-        modal: true
         Label {
             text: qsTr("This clears every preference back to defaults. Downloaded models are not affected.")
+            color: Theme.text
             wrapMode: Text.Wrap
             width: 320
         }

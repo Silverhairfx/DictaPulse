@@ -15,7 +15,7 @@ ScrollView {
                 color: Theme.text
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
-                text: qsTr("DictaPulse is a local-first AI voice dictation tool for KDE Plasma.\nVersion 0.1.0 — MVP.")
+                text: qsTr("DictaPulse is a local-first AI voice dictation tool for KDE Plasma.\nVersion 0.1.0 — free software under the GPL-3.0 license.")
             }
             Label {
                 color: Theme.textDim
@@ -38,7 +38,7 @@ ScrollView {
                 font.pixelSize: 12
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
-                text: qsTr("• Whisper models: ggerganov / whisper.cpp\n• Tray: KStatusNotifierItem (KDE Frameworks)\n• Shortcuts: KGlobalAccel (KDE Frameworks)\n• Wayland text injection: wtype")
+                text: qsTr("• Whisper models: ggerganov / whisper.cpp (MIT)\n• Tray: KStatusNotifierItem (KDE Frameworks)\n• Shortcuts: KGlobalAccel (KDE Frameworks)\n• Wayland text injection: wtype\n• Display font: DM Serif Display (SIL OFL 1.1)")
             }
         }
     }

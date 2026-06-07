@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DictaPulse installer for Arch / CachyOS (and any distro with Qt 6.6+, KF6, and a C++20 compiler).
+# DictaPulse installer for Arch / CachyOS (and any distro with Qt 6.9+, KF6, and a C++20 compiler).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,7 +21,7 @@ if command -v pacman >/dev/null 2>&1; then
     missing=()
     for pkg in qt6-base qt6-declarative qt6-multimedia qt6-svg qt6-wayland \
                extra-cmake-modules kglobalaccel kstatusnotifieritem \
-               knotifications kconfig wtype; do
+               knotifications kconfig kcolorscheme kwindowsystem qtkeychain-qt6 wtype; do
         pacman -Q "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
     done
     if [ ${#missing[@]} -gt 0 ]; then

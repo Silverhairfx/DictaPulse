@@ -20,12 +20,13 @@ ScrollView {
                 interactive: false
                 spacing: 8
                 model: modelManager
-                delegate: Rectangle {
+                delegate: ClaySurface {
                     width: list.width
-                    radius: 10
-                    color: Theme.bg
-                    border.color: appSettings.activeModel === modelId ? Theme.accent : Theme.border
-                    border.width: appSettings.activeModel === modelId ? 2 : 1
+                    tier: appSettings.activeModel === modelId ? "sm" : "pressed"
+                    radius: Theme.radiusSm + 2
+                    color: appSettings.activeModel === modelId ? Theme.accentSoft : Theme.bgWell
+                    borderColor: appSettings.activeModel === modelId ? Theme.accent : Theme.border
+                    borderWidth: appSettings.activeModel === modelId ? 1.5 : 1
                     implicitHeight: layout.implicitHeight + 24
 
                     ColumnLayout {
@@ -71,7 +72,7 @@ ScrollView {
                             Item { Layout.fillWidth: true }
                         }
 
-                        ProgressBar {
+                        ClayProgressBar {
                             visible: downloading
                             Layout.fillWidth: true
                             from: 0
@@ -83,24 +84,27 @@ ScrollView {
                             spacing: 8
                             Layout.fillWidth: true
                             Item { Layout.fillWidth: true }
-                            Button {
+                            ClayButton {
                                 visible: !installed && !downloading
                                 text: qsTr("Download")
                                 onClicked: modelManager.download(modelId)
                             }
-                            Button {
+                            ClayButton {
                                 visible: downloading
                                 text: qsTr("Cancel")
+                                variant: "outline"
                                 onClicked: modelManager.cancel(modelId)
                             }
-                            Button {
+                            ClayButton {
                                 visible: installed && appSettings.activeModel !== modelId
                                 text: qsTr("Use this model")
+                                variant: "secondary"
                                 onClicked: appSettings.activeModel = modelId
                             }
-                            Button {
+                            ClayButton {
                                 visible: installed
                                 text: qsTr("Delete")
+                                variant: "destructive"
                                 onClicked: {
                                     if (appSettings.activeModel === modelId) appSettings.activeModel = ""
                                     modelManager.remove(modelId)

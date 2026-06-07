@@ -27,7 +27,8 @@ option(DICTAPULSE_ENABLE_CUDA   "Build whisper.cpp with CUDA acceleration"   OFF
 option(DICTAPULSE_ENABLE_HIP    "Build whisper.cpp with ROCm/HIP acceleration" OFF)
 
 # ---- Qt 6 ----
-find_package(Qt6 6.6 REQUIRED COMPONENTS
+# 6.9+ for RectangularShadow (QtQuick.Effects), used by the clay design system.
+find_package(Qt6 6.9 REQUIRED COMPONENTS
     Core
     Gui
     Widgets
@@ -40,7 +41,7 @@ find_package(Qt6 6.6 REQUIRED COMPONENTS
     DBus
 )
 
-qt_standard_project_setup(REQUIRES 6.6)
+qt_standard_project_setup(REQUIRES 6.9)
 qt_policy(SET QTP0004 NEW)
 
 # Secure storage for LLM API keys (KWallet/libsecret on Linux, Credential
