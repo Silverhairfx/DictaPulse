@@ -38,6 +38,10 @@ public:
     virtual void showTrayMessage(const QString& title, const QString& body) = 0;
     virtual void setTrayState(const QString& state, const QString& tooltip) = 0;
 
+    /// The focused window's application id / window class (lowercased), or empty
+    /// if it can't be determined. Used by per-app output rules. Default: none.
+    virtual QString activeWindowId() const { return {}; }
+
 signals:
     void dictationShortcutPressed();
     void cancelShortcutPressed();

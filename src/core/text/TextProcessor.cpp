@@ -10,9 +10,9 @@ TextProcessor::TextProcessor(QObject* parent)
 {
 }
 
-void TextProcessor::setReplacements(const QHash<QString, QString>& map)
+void TextProcessor::setReplacements(const QVector<Replacement>& list)
 {
-    m_replacements = map;
+    m_replacements = list;
 }
 
 QString TextProcessor::process(const QString& raw, const QString& language, const Options& opts) const
@@ -56,14 +56,6 @@ QString TextProcessor::process(const QString& raw, const QString& language, cons
         text = kept.join(' ');
     }
 
-    if (!m_replacements.isEmpty()) {
-        for (auto it = m_replacements.constBegin(); it != m_replacements.constEnd(); ++it) {
-            const QRegularExpression re("\\b" + QRegularExpression::escape(it.key()) + "\\b",
-                                         QRegularExpression::CaseInsensitiveOption);
-            text.replace(re, it.value());
-        }
-    }
-
     if (opts.capitalize && !text.isEmpty()) {
         text[0] = text[0].toUpper();
         static const QRegularExpression sentenceEnd(R"(([.!?]\s+)([a-z]))");
@@ -79,6 +71,22 @@ QString TextProcessor::process(const QString& raw, const QString& language, cons
         }
         out.append(text.mid(last));
         text = out;
+    }
+
+    // Personal dictionary — applied LAST so the user's exact target casing wins
+    // over the sentence-capitalization pass above. Each rule is filtered by
+    // language (empty = all, else prefix match), and honors its own
+    // case-sensitivity and whole-word flags.
+    for (const Replacement& r : m_replacements) {
+        if (r.from.isEmpty()) continue;
+        if (!r.lang.isEmpty() && !language.startsWith(r.lang, Qt::CaseInsensitive)) continue;
+
+        QString pattern = QRegularExpression::escape(r.from);
+        if (r.wholeWord) pattern = QStringLiteral("\\b") + pattern + QStringLiteral("\\b");
+        QRegularExpression::PatternOptions popts = QRegularExpression::UseUnicodePropertiesOption;
+        if (!r.caseSensitive) popts |= QRegularExpression::CaseInsensitiveOption;
+        const QRegularExpression re(pattern, popts);
+        if (re.isValid()) text.replace(re, r.to);
     }
 
     if (opts.trailingSpace && !text.endsWith(' ')) text.append(' ');

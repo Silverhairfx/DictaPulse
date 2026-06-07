@@ -65,6 +65,9 @@ public:
     Q_INVOKABLE QString modifierLabel(int modifiers) const;
     Q_INVOKABLE void showSettingsWindow();
     Q_INVOKABLE void quitApp();
+    /// The window class/app-id of the currently focused window — used by the
+    /// per-app rules page to show "Detected: <app>" and help authoring rules.
+    Q_INVOKABLE QString activeWindowId() const;
 
 signals:
     void stateChanged();
@@ -94,6 +97,9 @@ private:
     void runTranscription();
     void finalizeInjection(const QString& text, const QString& mode, bool fallback);
     QString activeLanguage() const;
+    void reloadDictionary();         // settings JSON → TextProcessor rules
+    QString dictionaryPrompt() const; // dictionary terms → whisper initial_prompt
+    QString resolveOutputMode() const; // per-app rule override or default
 
     Settings* m_settings;
     ModelManager* m_models;
@@ -112,6 +118,7 @@ private:
     QString m_lastTranscript;
     QString m_lastError;
     QString m_detectedLanguage;
+    QString m_effectiveOutputMode; // resolved at dictation start (per-app aware)
     bool m_dictationActive = false;
 };
 

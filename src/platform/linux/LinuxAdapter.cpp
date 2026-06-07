@@ -1,5 +1,6 @@
 #include "LinuxAdapter.h"
 
+#include "ActiveWindowWatcher.h"
 #include "TextInjector.h"
 
 #include <QAction>
@@ -18,6 +19,7 @@ namespace dictapulse {
 LinuxAdapter::LinuxAdapter(QObject* parent)
     : PlatformAdapter(parent)
     , m_injector(new TextInjector(this))
+    , m_activeWindow(new ActiveWindowWatcher(this))
 {
     m_animTimer.setInterval(500);
     connect(&m_animTimer, &QTimer::timeout, this, &LinuxAdapter::onAnimationTick);
@@ -91,6 +93,11 @@ PlatformAdapter::InjectResult LinuxAdapter::injectText(const QString& text,
     case TextInjector::Result::Failed: return InjectResult::Failed;
     }
     return InjectResult::Failed;
+}
+
+QString LinuxAdapter::activeWindowId() const
+{
+    return m_activeWindow ? m_activeWindow->activeWindowId() : QString();
 }
 
 void LinuxAdapter::showTrayMessage(const QString& title, const QString& body)

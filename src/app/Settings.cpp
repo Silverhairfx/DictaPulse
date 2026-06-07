@@ -59,6 +59,10 @@ constexpr auto kCleanupRemoteModel = "cleanup/remoteModel";
 constexpr auto kCleanupRemoteEndpoint = "cleanup/remoteEndpoint";
 constexpr auto kCleanupSystemPrompt = "cleanup/systemPrompt";
 constexpr auto kCleanupUseVocab = "cleanup/useVocab";
+constexpr auto kDictionary = "dictionary/entries";
+constexpr auto kDictionaryBias = "dictionary/biasWhisper";
+constexpr auto kPerAppRules = "output/perAppRules";
+constexpr auto kPerAppRulesEnabled = "output/perAppRulesEnabled";
 constexpr auto kDefaultCleanupPrompt =
     "Clean up this voice-dictation transcription. Fix punctuation and "
     "capitalization. Preserve the speaker's dialect, names, and meaning. Do not "
@@ -170,6 +174,11 @@ DICTAPULSE_SETTING_STR(cleanupRemoteEndpoint, setCleanupRemoteEndpoint, kCleanup
 DICTAPULSE_SETTING_STR(cleanupSystemPrompt, setCleanupSystemPrompt, kCleanupSystemPrompt, kDefaultCleanupPrompt, cleanupSystemPromptChanged)
 DICTAPULSE_SETTING_BOOL(cleanupUseVocab, setCleanupUseVocab, kCleanupUseVocab, true, cleanupUseVocabChanged)
 
+DICTAPULSE_SETTING_STR(dictionary, setDictionary, kDictionary, "[]", dictionaryChanged)
+DICTAPULSE_SETTING_BOOL(dictionaryBias, setDictionaryBias, kDictionaryBias, true, dictionaryBiasChanged)
+DICTAPULSE_SETTING_STR(perAppRules, setPerAppRules, kPerAppRules, "[]", perAppRulesChanged)
+DICTAPULSE_SETTING_BOOL(perAppRulesEnabled, setPerAppRulesEnabled, kPerAppRulesEnabled, false, perAppRulesEnabledChanged)
+
 QStringList Settings::enabledLanguages() const
 {
     return m_store.value(kEnabledLanguages, QStringList { "en" }).toStringList();
@@ -233,6 +242,10 @@ void Settings::resetToDefaults()
     emit cleanupRemoteEndpointChanged();
     emit cleanupSystemPromptChanged();
     emit cleanupUseVocabChanged();
+    emit dictionaryChanged();
+    emit dictionaryBiasChanged();
+    emit perAppRulesChanged();
+    emit perAppRulesEnabledChanged();
 }
 
 } // namespace dictapulse

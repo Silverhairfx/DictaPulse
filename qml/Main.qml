@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import QtQuick.Effects
 import QtQuick.Layouts
 import QtQuick.Window
 import DictaPulse
@@ -34,6 +35,7 @@ ApplicationWindow {
         { label: qsTr("Language"),      emoji: "🌐", file: "pages/LanguagePage.qml" },
         { label: qsTr("Output"),        emoji: "↪", file: "pages/OutputPage.qml" },
         { label: qsTr("Cleanup"),       emoji: "✨", file: "pages/CleanupPage.qml" },
+        { label: qsTr("Dictionary"),    emoji: "📖", file: "pages/DictionaryPage.qml" },
         { label: qsTr("Backend"),       emoji: "⚙", file: "pages/BackendPage.qml" },
         { label: qsTr("Overlay"),       emoji: "◐", file: "pages/OverlayAppearancePage.qml" },
         { label: qsTr("Privacy"),       emoji: "🔒", file: "pages/PrivacyPage.qml" },
@@ -87,22 +89,25 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     spacing: 11
 
-                    // Logo mark: raised indigo clay tile.
-                    ClaySurface {
+                    // Logo mark: the actual app icon (gradient tile + waveform),
+                    // sitting on a clay drop shadow for depth.
+                    Item {
                         implicitWidth: 36
                         implicitHeight: 36
-                        tier: "sm"
-                        radius: 11
-                        color: Theme.accent
-                        embossStrength: 0.7
-                        borderColor: "transparent"
-                        borderWidth: 0
-                        Label {
-                            anchors.centerIn: parent
-                            text: "◢"
-                            color: Theme.onAccent
-                            font.pixelSize: 17
-                            font.weight: Font.Bold
+                        RectangularShadow {
+                            anchors.fill: logoImg
+                            radius: 10
+                            blur: 10
+                            offset.y: 3
+                            color: Theme.clayDrop
+                            cached: true
+                        }
+                        Image {
+                            id: logoImg
+                            anchors.fill: parent
+                            source: "qrc:/qt/qml/DictaPulse/icons/dictapulse.svg"
+                            sourceSize: Qt.size(72, 72)
+                            smooth: true
                         }
                     }
                     ColumnLayout {

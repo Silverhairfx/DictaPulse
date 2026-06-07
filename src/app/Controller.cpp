@@ -12,7 +12,11 @@
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QKeySequence>
+#include <QSet>
 
 #include <cstdio>
 
@@ -53,6 +57,10 @@ Controller::Controller(Settings* settings,
             this, &Controller::onTraySettings);
     connect(m_platform, &PlatformAdapter::trayQuitRequested,
             this, &Controller::onTrayQuit);
+
+    // Personal dictionary: keep TextProcessor's rules in sync with settings.
+    connect(m_settings, &Settings::dictionaryChanged, this, &Controller::reloadDictionary);
+    reloadDictionary();
 
     // Auto-pick the first installed model if none selected.
     if (m_settings->activeModel().isEmpty()) {
@@ -116,6 +124,83 @@ QString Controller::activeLanguage() const
 {
     if (m_settings->autoDetectLanguage()) return {};
     return m_settings->defaultLanguage();
+}
+
+QString Controller::activeWindowId() const
+{
+    return m_platform ? m_platform->activeWindowId() : QString();
+}
+
+void Controller::reloadDictionary()
+{
+    // Settings store the dictionary as a JSON array of
+    // {from,to,caseSensitive,wholeWord,lang}. Parse it into TextProcessor rules.
+    QVector<TextProcessor::Replacement> rules;
+    const QJsonDocument doc = QJsonDocument::fromJson(m_settings->dictionary().toUtf8());
+    if (doc.isArray()) {
+        const QJsonArray arr = doc.array();
+        rules.reserve(arr.size());
+        for (const QJsonValue& v : arr) {
+            const QJsonObject o = v.toObject();
+            TextProcessor::Replacement r;
+            r.from = o.value("from").toString();
+            r.to = o.value("to").toString();
+            r.caseSensitive = o.value("caseSensitive").toBool(false);
+            r.wholeWord = o.value("wholeWord").toBool(true);
+            r.lang = o.value("lang").toString();
+            if (!r.from.isEmpty()) rules.append(r);
+        }
+    }
+    m_text->setReplacements(rules);
+}
+
+QString Controller::dictionaryPrompt() const
+{
+    // Feed the dictionary's target spellings to whisper as an initial_prompt so
+    // decoding is biased toward names/jargon the user actually uses. Capped so
+    // it never crowds out whisper's ~224-token prompt budget.
+    if (!m_settings->dictionaryBias()) return {};
+    const QJsonDocument doc = QJsonDocument::fromJson(m_settings->dictionary().toUtf8());
+    if (!doc.isArray()) return {};
+    QStringList terms;
+    QSet<QString> seen;
+    for (const QJsonValue& v : doc.array()) {
+        const QString to = v.toObject().value("to").toString().trimmed();
+        if (to.isEmpty() || seen.contains(to)) continue;
+        seen.insert(to);
+        terms << to;
+    }
+    if (terms.isEmpty()) return {};
+    QString prompt = terms.join(QStringLiteral(", "));
+    if (prompt.size() > 800) prompt = prompt.left(800); // ~well under the token cap
+    return prompt;
+}
+
+QString Controller::resolveOutputMode() const
+{
+    const QString fallback = m_settings->outputMode();
+    if (!m_settings->perAppRulesEnabled()) return fallback;
+
+    const QString app = m_platform ? m_platform->activeWindowId().toLower() : QString();
+    if (app.isEmpty()) return fallback;
+
+    // Rules are a JSON array of {match,mode}; first case-insensitive substring
+    // match against the focused window's app-id/class wins.
+    const QJsonDocument doc = QJsonDocument::fromJson(m_settings->perAppRules().toUtf8());
+    if (!doc.isArray()) return fallback;
+    for (const QJsonValue& v : doc.array()) {
+        const QJsonObject o = v.toObject();
+        const QString match = o.value("match").toString().trimmed().toLower();
+        const QString mode = o.value("mode").toString();
+        if (match.isEmpty() || mode.isEmpty()) continue;
+        if (app.contains(match)) {
+            std::fprintf(stderr, "[DictaPulse] per-app rule '%s' matched app '%s' → mode '%s'\n",
+                         qUtf8Printable(match), qUtf8Printable(app), qUtf8Printable(mode));
+            std::fflush(stderr);
+            return mode;
+        }
+    }
+    return fallback;
 }
 
 void Controller::applyShortcuts()
@@ -217,6 +302,9 @@ void Controller::startDictation()
     if (!ensureModelLoaded()) return;
 
     m_dictationActive = true;
+    // Resolve the output mode now, while the target window still holds focus —
+    // per-app rules need the app-id captured before our overlay/processing.
+    m_effectiveOutputMode = resolveOutputMode();
     if (m_settings->overlayEnabled()) emit overlayRequested(true);
     m_capture->start(m_settings->vadThreshold(),
                      m_settings->silenceMs(),
@@ -285,8 +373,10 @@ void Controller::runTranscription()
     const QString lang = activeLanguage();
     const bool autoDetect = m_settings->autoDetectLanguage();
     const int threads = m_settings->cpuThreads();
-    const QString mode = m_settings->outputMode();
+    const QString mode = m_effectiveOutputMode.isEmpty() ? m_settings->outputMode()
+                                                         : m_effectiveOutputMode;
     const bool fallback = m_settings->clipboardFallback();
+    const QString dictPrompt = dictionaryPrompt();
     TextProcessor::Options opts;
     opts.cleanup = m_settings->cleanupEnabled();
     opts.capitalize = m_settings->capitalizeSentences();
@@ -303,8 +393,8 @@ void Controller::runTranscription()
                  durationSec, peakRms, m_settings->vadThreshold(), translate);
     std::fflush(stderr);
 
-    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, translate, candidateLangs]() mutable {
-        WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads, translate, candidateLangs);
+    QMetaObject::invokeMethod(m_engine, [this, samples = std::move(samples), lang, autoDetect, threads, mode, fallback, opts, peakRms, durationSec, translate, candidateLangs, dictPrompt]() mutable {
+        WhisperEngine::Result r = m_engine->transcribe(samples, lang, autoDetect, threads, translate, candidateLangs, dictPrompt);
         std::fprintf(stderr,
                      "[DictaPulse] whisper ok=%d lang='%s' text='%s'\n",
                      r.ok, qUtf8Printable(r.detectedLanguage), qUtf8Printable(r.text));

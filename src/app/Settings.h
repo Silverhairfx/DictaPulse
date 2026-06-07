@@ -58,6 +58,13 @@ class Settings : public QObject {
     Q_PROPERTY(QString cleanupSystemPrompt READ cleanupSystemPrompt WRITE setCleanupSystemPrompt NOTIFY cleanupSystemPromptChanged)
     Q_PROPERTY(bool cleanupUseVocab READ cleanupUseVocab WRITE setCleanupUseVocab NOTIFY cleanupUseVocabChanged)
 
+    // Personal dictionary — JSON array of {from,to,caseSensitive,wholeWord,lang}.
+    Q_PROPERTY(QString dictionary READ dictionary WRITE setDictionary NOTIFY dictionaryChanged)
+    Q_PROPERTY(bool dictionaryBias READ dictionaryBias WRITE setDictionaryBias NOTIFY dictionaryBiasChanged)
+    // Per-app output rules — JSON array of {match,mode}; gated by enabled flag.
+    Q_PROPERTY(QString perAppRules READ perAppRules WRITE setPerAppRules NOTIFY perAppRulesChanged)
+    Q_PROPERTY(bool perAppRulesEnabled READ perAppRulesEnabled WRITE setPerAppRulesEnabled NOTIFY perAppRulesEnabledChanged)
+
 public:
     explicit Settings(QObject* parent = nullptr);
 
@@ -167,6 +174,15 @@ public:
     bool cleanupUseVocab() const;
     void setCleanupUseVocab(bool value);
 
+    QString dictionary() const;
+    void setDictionary(const QString& value);
+    bool dictionaryBias() const;
+    void setDictionaryBias(bool value);
+    QString perAppRules() const;
+    void setPerAppRules(const QString& value);
+    bool perAppRulesEnabled() const;
+    void setPerAppRulesEnabled(bool value);
+
     Q_INVOKABLE void resetToDefaults();
 
 signals:
@@ -217,6 +233,10 @@ signals:
     void cleanupRemoteEndpointChanged();
     void cleanupSystemPromptChanged();
     void cleanupUseVocabChanged();
+    void dictionaryChanged();
+    void dictionaryBiasChanged();
+    void perAppRulesChanged();
+    void perAppRulesEnabledChanged();
 
 private:
     QSettings m_store;

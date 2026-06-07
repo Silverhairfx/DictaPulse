@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QHash>
 #include <QObject>
 #include <QString>
+#include <QVector>
 
 namespace dictapulse {
 
@@ -16,14 +16,24 @@ public:
         bool trailingSpace = true;
     };
 
+    // A single personal-dictionary rule. `lang` empty = applies to all
+    // languages, otherwise matched by prefix (e.g. "en" matches "en").
+    struct Replacement {
+        QString from;
+        QString to;
+        bool caseSensitive = false;
+        bool wholeWord = true;
+        QString lang;
+    };
+
     explicit TextProcessor(QObject* parent = nullptr);
 
     QString process(const QString& raw, const QString& language, const Options& opts) const;
 
-    void setReplacements(const QHash<QString, QString>& map);
+    void setReplacements(const QVector<Replacement>& list);
 
 private:
-    QHash<QString, QString> m_replacements;
+    QVector<Replacement> m_replacements;
 };
 
 } // namespace dictapulse

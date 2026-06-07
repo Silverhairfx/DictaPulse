@@ -9,6 +9,7 @@ set(DICTAPULSE_QML_FILES
     "${DICTAPULSE_QML_DIR}/pages/LanguagePage.qml"
     "${DICTAPULSE_QML_DIR}/pages/OutputPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/CleanupPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/DictionaryPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/BackendPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/OverlayAppearancePage.qml"
     "${DICTAPULSE_QML_DIR}/pages/PrivacyPage.qml"
@@ -83,6 +84,8 @@ qt_add_executable(dictapulse
     platform/linux/LinuxAdapter.cpp
     platform/linux/TextInjector.h
     platform/linux/TextInjector.cpp
+    platform/linux/ActiveWindowWatcher.h
+    platform/linux/ActiveWindowWatcher.cpp
 )
 
 target_include_directories(dictapulse PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

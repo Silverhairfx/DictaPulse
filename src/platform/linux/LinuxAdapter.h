@@ -14,6 +14,7 @@ class KStatusNotifierItem;
 namespace dictapulse {
 
 class TextInjector;
+class ActiveWindowWatcher;
 
 class LinuxAdapter : public PlatformAdapter {
     Q_OBJECT
@@ -30,6 +31,7 @@ public:
 
     void showTrayMessage(const QString& title, const QString& body) override;
     void setTrayState(const QString& state, const QString& tooltip) override;
+    QString activeWindowId() const override;
 
     void setAnimationEnabled(bool enabled);
 
@@ -45,6 +47,7 @@ private:
     QAction* m_dictateAction = nullptr;
     QAction* m_cancelAction = nullptr;
     TextInjector* m_injector = nullptr;
+    ActiveWindowWatcher* m_activeWindow = nullptr;
     QTimer m_animTimer;
     QString m_currentState = "idle";
     int m_animFrame = 0;
