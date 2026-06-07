@@ -20,9 +20,14 @@ Fully offline. Built on Qt 6 Quick/QML, KDE Frameworks 6, and `whisper.cpp`.
 
 <img src="docs/screenshots/dashboard-dark.png" width="780" alt="DictaPulse dashboard — dark mode" />
 
-<sub>One settings hub, eleven focused pages, a tactile "clay" design — in dark and light.</sub>
+<sub>One settings hub, a tactile "clay" design, and an AI Profile that learns how you speak — in dark and light.</sub>
 
 </div>
+
+---
+
+> ### 🧪 This is a public **beta**
+> DictaPulse is an early, actively-developed release — not the finished product. It works and it's daily-driver-usable, but expect rough edges as features land and stabilize across platforms. **Found a bug or want a feature? Please open it on GitHub** → [**Issues**](https://github.com/Silverhairfx/DictaPulse/issues) for bugs, [**Discussions**](https://github.com/Silverhairfx/DictaPulse/discussions) for ideas and feature requests. Your reports during beta directly shape what ships.
 
 ---
 
@@ -41,6 +46,8 @@ The KDE Plasma 6 release is shipping first. The architecture is cleanly layered 
 | ⚡ **Direct text insertion** | Transcripts are typed into your active app via `wtype` (Wayland) or `xdotool` (X11). Clipboard is a fallback, not the default. |
 | 🧠 **Local Whisper transcription** | `whisper.cpp` runs entirely on your machine. Audio never leaves the device. |
 | ✨ **Transcript cleanup, your way** | Pick your polish level: offline rules engine (instant, incl. Arabic punctuation), a **local LLM** via Ollama / LM Studio, or a **remote API** (Anthropic / OpenAI / any OpenAI-compatible endpoint). API keys live in your system keyring — never in config files. |
+| 👤 **AI Profile that learns you** | A **Profile** module — **Refine** (fillers, auto-punctuation, smart lists, spoken corrections), **Personalize** (dictionary, voice templates, tone, and a usage dashboard with animated glowing charts), and **Devs Voice** (syntax-aware dictation + your tech jargon). Everything you set is fed to **whichever AI you've connected** — Whisper's vocabulary bias *and* the cleanup LLM's instructions — so it gets more precise the more it knows you. |
+| 🎯 **Per-app output rules** | Override the output mode per focused app — e.g. always copy + paste into your terminal. Active window detected via a tiny KWin script (Wayland) or xdotool (X11). |
 | 🎛️ **Built-in model manager** | Browse, download, switch, and delete Whisper models from the GUI. Sizes from 75 MB (tiny) to 3 GB (large-v3). |
 | 🌐 **99 languages** | English, Arabic, Italian, French, German, Spanish, Japanese, Chinese… the full Whisper set, with constrained auto-detect so it never drifts to a wrong-but-similar language. |
 | 🖥️ **CPU / GPU / Hybrid** | CPU works out of the box. Optional Vulkan, CUDA, and ROCm/HIP builds for GPU acceleration, with automatic hardware detection. |
@@ -63,6 +70,12 @@ The KDE Plasma 6 release is shipping first. The architecture is cleanly layered 
 |:---:|:---:|
 | <img src="docs/screenshots/models-dark.png" alt="Model manager" /> | <img src="docs/screenshots/output-dark.png" alt="Output settings" /> |
 | <img src="docs/screenshots/shortcuts-dark.png" alt="Shortcuts" /> | <img src="docs/screenshots/dialog-light.png" alt="Cleanup providers" /> |
+
+**The Profile module** — your AI personalization layer, with animated glowing usage charts:
+
+| Usage dashboard | Refine |
+|:---:|:---:|
+| <img src="docs/screenshots/profile-dashboard-dark.png" alt="Profile usage dashboard" /> | <img src="docs/screenshots/profile-refine-dark.png" alt="Profile Refine tab" /> |
 
 </div>
 
@@ -373,26 +386,35 @@ Cleanup sends your transcribed text plus your system prompt to the endpoint you 
 
 ---
 
-## 🤝 Contributing
+## 🐛 Reporting bugs & requesting features
 
-Issues, ideas, and PRs are welcome. If you spot a crash on Plasma 6, please file an issue with:
+This is a beta — your feedback is the roadmap. Please use GitHub's own tools:
 
-- Output of `inxi -Fxz` (or `uname -a` + `plasmashell --version`)
-- Whether you're on Wayland or X11
-- The active model and backend mode
-- A reproduction recipe
+- 🐞 **Bugs** → [**open an Issue**](https://github.com/Silverhairfx/DictaPulse/issues). Helpful to include:
+  - Output of `inxi -Fxz` (or `uname -a` + `plasmashell --version`)
+  - Whether you're on Wayland or X11
+  - The active model and backend mode
+  - A reproduction recipe
+- 💡 **Feature requests & ideas** → [**start a Discussion**](https://github.com/Silverhairfx/DictaPulse/discussions).
+- 🔀 **Pull requests** are welcome — by contributing you agree your changes are licensed under GPL-3.0 (see below).
 
 ---
 
-## 📜 License
+## 📜 License & ownership
 
-**GPL-3.0** — see [LICENSE](LICENSE). Bundled dependencies retain their own licenses:
+Built by **Tymour Kadry** ([@silverhairfx](https://github.com/Silverhairfx)) and owned by **ETK Technologies** — <https://etk-tech.com>.
 
-- [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — MIT
-- [Qt 6](https://www.qt.io/licensing) — LGPL v3 / commercial
-- [KDE Frameworks 6](https://kde.org/products/frameworks/) — LGPL
-- [QtKeychain](https://github.com/frankosterfeld/qtkeychain) — BSD-3-Clause
-- [DM Serif Display](https://fonts.google.com/specimen/DM+Serif+Display) — SIL Open Font License 1.1
+**Licensed under [GPL-3.0](LICENSE)** (see also [NOTICE](NOTICE)). In plain terms:
+
+- ✅ **Free to use** — personally *and* commercially, today and as it grows.
+- ✅ **Free to study, modify, and share** — forks are welcome.
+- 🔒 **Copyleft — no closed-source forks.** Any distribution (including modified or rebranded versions, and anything sold) **must** ship the complete corresponding source under GPL-3.0. **Re-licensing DictaPulse or a derivative as closed source / a paid proprietary product is a license violation** and will be pursued.
+- 🏷️ **Attribution required** — forks must preserve the original authorship and copyright (ETK Technologies / Tymour Kadry).
+- 🧬 **Provenance** — the source and binary carry origin markers (see [NOTICE](NOTICE)); `scripts/detect-forks.py` scans public GitHub for copies.
+
+As the sole copyright holder, ETK Technologies reserves the right to offer future versions, tiers, or modules under separate commercial terms. That does not affect your rights to this GPL-3.0 release.
+
+Bundled dependencies retain their own licenses: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) · [Qt 6](https://www.qt.io/licensing) (LGPL-3.0 / commercial) · [KDE Frameworks 6](https://kde.org/products/frameworks/) (LGPL) · [QtKeychain](https://github.com/frankosterfeld/qtkeychain) (BSD-3-Clause) · [DM Serif Display](https://fonts.google.com/specimen/DM+Serif+Display) (SIL OFL 1.1).
 
 ---
 

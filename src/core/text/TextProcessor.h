@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #pragma once
 
 #include <QObject>
@@ -14,6 +16,7 @@ public:
         bool capitalize = true;
         bool removeFillers = false;
         bool trailingSpace = true;
+        bool smartLists = false;
     };
 
     // A single personal-dictionary rule. `lang` empty = applies to all

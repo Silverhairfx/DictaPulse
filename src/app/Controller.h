@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #pragma once
 
 #include "Settings.h"
@@ -15,6 +17,7 @@ namespace dictapulse {
 class AudioCapture;
 class CleanupService;
 class PlatformAdapter;
+class ProfileStats;
 class SecretStore;
 class TextProcessor;
 class WhisperEngine;
@@ -41,6 +44,7 @@ public:
                         PlatformAdapter* platform,
                         CleanupService* cleanup,
                         SecretStore* secrets,
+                        ProfileStats* stats,
                         QObject* parent = nullptr);
     ~Controller() override;
 
@@ -97,8 +101,7 @@ private:
     void runTranscription();
     void finalizeInjection(const QString& text, const QString& mode, bool fallback);
     QString activeLanguage() const;
-    void reloadDictionary();         // settings JSON → TextProcessor rules
-    QString dictionaryPrompt() const; // dictionary terms → whisper initial_prompt
+    void reloadProfileRules();       // dictionary + voice templates → TextProcessor
     QString resolveOutputMode() const; // per-app rule override or default
 
     Settings* m_settings;
@@ -107,6 +110,7 @@ private:
     PlatformAdapter* m_platform;
     CleanupService* m_cleanup = nullptr;
     SecretStore* m_secrets = nullptr;
+    ProfileStats* m_stats = nullptr;
     AudioCapture* m_capture = nullptr;
     WhisperEngine* m_engine = nullptr;
     TextProcessor* m_text = nullptr;
@@ -119,6 +123,7 @@ private:
     QString m_lastError;
     QString m_detectedLanguage;
     QString m_effectiveOutputMode; // resolved at dictation start (per-app aware)
+    QString m_dictationApp;        // focused app captured at dictation start
     bool m_dictationActive = false;
 };
 

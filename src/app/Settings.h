@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #pragma once
 
 #include <QObject>
@@ -64,6 +66,18 @@ class Settings : public QObject {
     // Per-app output rules — JSON array of {match,mode}; gated by enabled flag.
     Q_PROPERTY(QString perAppRules READ perAppRules WRITE setPerAppRules NOTIFY perAppRulesChanged)
     Q_PROPERTY(bool perAppRulesEnabled READ perAppRulesEnabled WRITE setPerAppRulesEnabled NOTIFY perAppRulesEnabledChanged)
+
+    // --- Profile module ---
+    // Refine: text-shaping behaviors (feed rules where possible + the LLM always)
+    Q_PROPERTY(bool refineSmartLists READ refineSmartLists WRITE setRefineSmartLists NOTIFY refineSmartListsChanged)
+    Q_PROPERTY(bool refineBacktrack READ refineBacktrack WRITE setRefineBacktrack NOTIFY refineBacktrackChanged)
+    Q_PROPERTY(bool refineAutoPunctuation READ refineAutoPunctuation WRITE setRefineAutoPunctuation NOTIFY refineAutoPunctuationChanged)
+    // Personalize: voice templates (JSON [{cue,expansion}]) + tone preset
+    Q_PROPERTY(QString voiceTemplates READ voiceTemplates WRITE setVoiceTemplates NOTIFY voiceTemplatesChanged)
+    Q_PROPERTY(QString toneStyle READ toneStyle WRITE setToneStyle NOTIFY toneStyleChanged)
+    // Devs Voice: dev mode + jargon vocabulary (newline/comma-separated terms)
+    Q_PROPERTY(bool devModeEnabled READ devModeEnabled WRITE setDevModeEnabled NOTIFY devModeEnabledChanged)
+    Q_PROPERTY(QString devJargon READ devJargon WRITE setDevJargon NOTIFY devJargonChanged)
 
 public:
     explicit Settings(QObject* parent = nullptr);
@@ -183,6 +197,21 @@ public:
     bool perAppRulesEnabled() const;
     void setPerAppRulesEnabled(bool value);
 
+    bool refineSmartLists() const;
+    void setRefineSmartLists(bool value);
+    bool refineBacktrack() const;
+    void setRefineBacktrack(bool value);
+    bool refineAutoPunctuation() const;
+    void setRefineAutoPunctuation(bool value);
+    QString voiceTemplates() const;
+    void setVoiceTemplates(const QString& value);
+    QString toneStyle() const;
+    void setToneStyle(const QString& value);
+    bool devModeEnabled() const;
+    void setDevModeEnabled(bool value);
+    QString devJargon() const;
+    void setDevJargon(const QString& value);
+
     Q_INVOKABLE void resetToDefaults();
 
 signals:
@@ -237,6 +266,13 @@ signals:
     void dictionaryBiasChanged();
     void perAppRulesChanged();
     void perAppRulesEnabledChanged();
+    void refineSmartListsChanged();
+    void refineBacktrackChanged();
+    void refineAutoPunctuationChanged();
+    void voiceTemplatesChanged();
+    void toneStyleChanged();
+    void devModeEnabledChanged();
+    void devJargonChanged();
 
 private:
     QSettings m_store;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "Controller.h"
 
 #include "Settings.h"
@@ -6,6 +8,8 @@
 #include "core/cleanup/SecretStore.h"
 #include "core/hardware/HardwareInfo.h"
 #include "core/models/ModelManager.h"
+#include "core/profile/ProfileContext.h"
+#include "core/profile/ProfileStats.h"
 #include "core/text/TextProcessor.h"
 #include "core/transcription/WhisperEngine.h"
 #include "platform/PlatformAdapter.h"
@@ -16,6 +20,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QKeySequence>
+#include <QRegularExpression>
 #include <QSet>
 
 #include <cstdio>
@@ -28,6 +33,7 @@ Controller::Controller(Settings* settings,
                        PlatformAdapter* platform,
                        CleanupService* cleanup,
                        SecretStore* secrets,
+                       ProfileStats* stats,
                        QObject* parent)
     : QObject(parent)
     , m_settings(settings)
@@ -36,6 +42,7 @@ Controller::Controller(Settings* settings,
     , m_platform(platform)
     , m_cleanup(cleanup)
     , m_secrets(secrets)
+    , m_stats(stats)
     , m_capture(new AudioCapture(this))
     , m_engine(new WhisperEngine())
     , m_text(new TextProcessor(this))
@@ -58,9 +65,10 @@ Controller::Controller(Settings* settings,
     connect(m_platform, &PlatformAdapter::trayQuitRequested,
             this, &Controller::onTrayQuit);
 
-    // Personal dictionary: keep TextProcessor's rules in sync with settings.
-    connect(m_settings, &Settings::dictionaryChanged, this, &Controller::reloadDictionary);
-    reloadDictionary();
+    // Profile: keep TextProcessor's rules (dictionary + voice templates) synced.
+    connect(m_settings, &Settings::dictionaryChanged, this, &Controller::reloadProfileRules);
+    connect(m_settings, &Settings::voiceTemplatesChanged, this, &Controller::reloadProfileRules);
+    reloadProfileRules();
 
     // Auto-pick the first installed model if none selected.
     if (m_settings->activeModel().isEmpty()) {
@@ -131,49 +139,11 @@ QString Controller::activeWindowId() const
     return m_platform ? m_platform->activeWindowId() : QString();
 }
 
-void Controller::reloadDictionary()
+void Controller::reloadProfileRules()
 {
-    // Settings store the dictionary as a JSON array of
-    // {from,to,caseSensitive,wholeWord,lang}. Parse it into TextProcessor rules.
-    QVector<TextProcessor::Replacement> rules;
-    const QJsonDocument doc = QJsonDocument::fromJson(m_settings->dictionary().toUtf8());
-    if (doc.isArray()) {
-        const QJsonArray arr = doc.array();
-        rules.reserve(arr.size());
-        for (const QJsonValue& v : arr) {
-            const QJsonObject o = v.toObject();
-            TextProcessor::Replacement r;
-            r.from = o.value("from").toString();
-            r.to = o.value("to").toString();
-            r.caseSensitive = o.value("caseSensitive").toBool(false);
-            r.wholeWord = o.value("wholeWord").toBool(true);
-            r.lang = o.value("lang").toString();
-            if (!r.from.isEmpty()) rules.append(r);
-        }
-    }
-    m_text->setReplacements(rules);
-}
-
-QString Controller::dictionaryPrompt() const
-{
-    // Feed the dictionary's target spellings to whisper as an initial_prompt so
-    // decoding is biased toward names/jargon the user actually uses. Capped so
-    // it never crowds out whisper's ~224-token prompt budget.
-    if (!m_settings->dictionaryBias()) return {};
-    const QJsonDocument doc = QJsonDocument::fromJson(m_settings->dictionary().toUtf8());
-    if (!doc.isArray()) return {};
-    QStringList terms;
-    QSet<QString> seen;
-    for (const QJsonValue& v : doc.array()) {
-        const QString to = v.toObject().value("to").toString().trimmed();
-        if (to.isEmpty() || seen.contains(to)) continue;
-        seen.insert(to);
-        terms << to;
-    }
-    if (terms.isEmpty()) return {};
-    QString prompt = terms.join(QStringLiteral(", "));
-    if (prompt.size() > 800) prompt = prompt.left(800); // ~well under the token cap
-    return prompt;
+    // Dictionary + voice templates compose into one replacement list applied to
+    // every transcript (see ProfileContext).
+    m_text->setReplacements(ProfileContext::replacements(m_settings));
 }
 
 QString Controller::resolveOutputMode() const
@@ -302,8 +272,10 @@ void Controller::startDictation()
     if (!ensureModelLoaded()) return;
 
     m_dictationActive = true;
-    // Resolve the output mode now, while the target window still holds focus —
-    // per-app rules need the app-id captured before our overlay/processing.
+    // Capture focus context now, while the target window still holds focus —
+    // per-app rules and usage stats both key off the app-id, which our overlay
+    // must not perturb later.
+    m_dictationApp = m_platform ? m_platform->activeWindowId() : QString();
     m_effectiveOutputMode = resolveOutputMode();
     if (m_settings->overlayEnabled()) emit overlayRequested(true);
     m_capture->start(m_settings->vadThreshold(),
@@ -376,12 +348,14 @@ void Controller::runTranscription()
     const QString mode = m_effectiveOutputMode.isEmpty() ? m_settings->outputMode()
                                                          : m_effectiveOutputMode;
     const bool fallback = m_settings->clipboardFallback();
-    const QString dictPrompt = dictionaryPrompt();
+    // Profile → Whisper vocabulary bias (dictionary targets, dev jargon, cues).
+    const QString dictPrompt = ProfileContext::whisperVocabulary(m_settings);
     TextProcessor::Options opts;
     opts.cleanup = m_settings->cleanupEnabled();
     opts.capitalize = m_settings->capitalizeSentences();
     opts.removeFillers = m_settings->removeFillerWords();
     opts.trailingSpace = m_settings->addTrailingSpace();
+    opts.smartLists = m_settings->refineSmartLists();
 
     const bool translate = m_settings->translateToEnglish();
     // Restrict auto-detect to the languages the user actually enabled, so the
@@ -458,7 +432,10 @@ void Controller::runTranscription()
                 cfg.remoteProvider = m_settings->cleanupRemoteProvider();
                 cfg.remoteModel = m_settings->cleanupRemoteModel();
                 cfg.remoteEndpoint = m_settings->cleanupRemoteEndpoint();
-                cfg.systemPrompt = m_settings->cleanupSystemPrompt();
+                // Append the user's Profile so the LLM honors tone, refine
+                // rules, dictionary, templates, and dev context too.
+                cfg.systemPrompt = m_settings->cleanupSystemPrompt()
+                                   + ProfileContext::systemPromptAugmentation(m_settings);
                 if (provider == QLatin1String("remote") && m_secrets)
                     cfg.apiKey = m_secrets->key(m_settings->cleanupRemoteProvider());
                 // cfg.vocabulary is filled once the vocabulary feature lands.
@@ -505,6 +482,13 @@ void Controller::finalizeInjection(const QString& text, const QString& mode, boo
 {
     m_lastTranscript = text;
     emit lastTranscriptChanged();
+
+    // Usage stats: count words in what we actually produced, attributed to the
+    // app that was focused when dictation began. Feeds the Profile dashboard.
+    if (m_stats) {
+        const int words = text.split(QRegularExpression(R"(\s+)"), Qt::SkipEmptyParts).size();
+        m_stats->record(words, m_dictationApp);
+    }
 
     const auto inj = m_platform->injectText(text, mode, fallback);
     const char* injStr = inj == PlatformAdapter::InjectResult::Inserted ? "Inserted"

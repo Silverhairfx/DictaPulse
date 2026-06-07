@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<!-- DictaPulse — © ETK Technologies / Tymour Kadry. Origin: DP-ORIGIN::ETK-Technologies::Tymour-Kadry::f33816f6-36ab-4c68-883e-f463fbb5cfe3 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="0 0 128 128" width="128" height="128">
+  <metadata>
+    <dc:creator>Tymour Kadry / ETK Technologies</dc:creator>
+    <dc:source>https://etk-tech.com</dc:source>
+    <dc:identifier>DP-ORIGIN::f33816f6-36ab-4c68-883e-f463fbb5cfe3</dc:identifier>
+  </metadata>
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#7c5cff"/>

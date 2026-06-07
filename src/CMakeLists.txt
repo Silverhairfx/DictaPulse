@@ -9,7 +9,10 @@ set(DICTAPULSE_QML_FILES
     "${DICTAPULSE_QML_DIR}/pages/LanguagePage.qml"
     "${DICTAPULSE_QML_DIR}/pages/OutputPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/CleanupPage.qml"
-    "${DICTAPULSE_QML_DIR}/pages/DictionaryPage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/ProfilePage.qml"
+    "${DICTAPULSE_QML_DIR}/pages/profile/ProfileRefine.qml"
+    "${DICTAPULSE_QML_DIR}/pages/profile/ProfilePersonalize.qml"
+    "${DICTAPULSE_QML_DIR}/pages/profile/ProfileDevsVoice.qml"
     "${DICTAPULSE_QML_DIR}/pages/BackendPage.qml"
     "${DICTAPULSE_QML_DIR}/pages/OverlayAppearancePage.qml"
     "${DICTAPULSE_QML_DIR}/pages/PrivacyPage.qml"
@@ -33,6 +36,8 @@ set(DICTAPULSE_QML_FILES
     "${DICTAPULSE_QML_DIR}/components/ClayTextArea.qml"
     "${DICTAPULSE_QML_DIR}/components/ClayProgressBar.qml"
     "${DICTAPULSE_QML_DIR}/components/ClayDialog.qml"
+    "${DICTAPULSE_QML_DIR}/components/CountUp.qml"
+    "${DICTAPULSE_QML_DIR}/components/GlowChart.qml"
 )
 
 foreach(qmlfile IN LISTS DICTAPULSE_QML_FILES)
@@ -73,6 +78,10 @@ qt_add_executable(dictapulse
     core/models/ModelManager.cpp
     core/text/TextProcessor.h
     core/text/TextProcessor.cpp
+    core/profile/ProfileStats.h
+    core/profile/ProfileStats.cpp
+    core/profile/ProfileContext.h
+    core/profile/ProfileContext.cpp
     core/cleanup/CleanupService.h
     core/cleanup/CleanupService.cpp
     core/cleanup/SecretStore.h

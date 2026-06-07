@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "TextProcessor.h"
 
 #include <QRegularExpression>
@@ -54,6 +56,25 @@ QString TextProcessor::process(const QString& raw, const QString& language, cons
             kept.append(w);
         }
         text = kept.join(' ');
+    }
+
+    // Smart lists: when the speaker enumerates inline ("…for 1. apples 2. bananas
+    // 3. oranges"), break each numbered item onto its own line. Conservative —
+    // only fires when there are at least two "<n>. " or "<n>) " markers so we
+    // don't mangle ordinary numbers like "section 1. introduction".
+    if (opts.smartLists) {
+        static const QRegularExpression marker(R"((\d+)[.\)]\s+)");
+        int count = 0;
+        for (auto it = marker.globalMatch(text); it.hasNext(); it.next()) ++count;
+        if (count >= 2) {
+            // Put a newline before every marker after the first; trim the lead-in
+            // up to the first marker so the list starts clean.
+            const QRegularExpressionMatch first = marker.match(text);
+            QString head = text.left(first.capturedStart()).trimmed();
+            QString body = text.mid(first.capturedStart());
+            body.replace(QRegularExpression(R"(\s*(\d+)[.\)]\s+)"), QStringLiteral("\n\\1. "));
+            text = (head.isEmpty() ? QString() : head + QStringLiteral("\n")) + body.trimmed();
+        }
     }
 
     if (opts.capitalize && !text.isEmpty()) {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "Settings.h"
 
 #include <QCoreApplication>
@@ -63,6 +65,13 @@ constexpr auto kDictionary = "dictionary/entries";
 constexpr auto kDictionaryBias = "dictionary/biasWhisper";
 constexpr auto kPerAppRules = "output/perAppRules";
 constexpr auto kPerAppRulesEnabled = "output/perAppRulesEnabled";
+constexpr auto kRefineSmartLists = "profile/refineSmartLists";
+constexpr auto kRefineBacktrack = "profile/refineBacktrack";
+constexpr auto kRefineAutoPunctuation = "profile/refineAutoPunctuation";
+constexpr auto kVoiceTemplates = "profile/voiceTemplates";
+constexpr auto kToneStyle = "profile/toneStyle";
+constexpr auto kDevModeEnabled = "profile/devMode";
+constexpr auto kDevJargon = "profile/devJargon";
 constexpr auto kDefaultCleanupPrompt =
     "Clean up this voice-dictation transcription. Fix punctuation and "
     "capitalization. Preserve the speaker's dialect, names, and meaning. Do not "
@@ -179,6 +188,14 @@ DICTAPULSE_SETTING_BOOL(dictionaryBias, setDictionaryBias, kDictionaryBias, true
 DICTAPULSE_SETTING_STR(perAppRules, setPerAppRules, kPerAppRules, "[]", perAppRulesChanged)
 DICTAPULSE_SETTING_BOOL(perAppRulesEnabled, setPerAppRulesEnabled, kPerAppRulesEnabled, false, perAppRulesEnabledChanged)
 
+DICTAPULSE_SETTING_BOOL(refineSmartLists, setRefineSmartLists, kRefineSmartLists, true, refineSmartListsChanged)
+DICTAPULSE_SETTING_BOOL(refineBacktrack, setRefineBacktrack, kRefineBacktrack, true, refineBacktrackChanged)
+DICTAPULSE_SETTING_BOOL(refineAutoPunctuation, setRefineAutoPunctuation, kRefineAutoPunctuation, true, refineAutoPunctuationChanged)
+DICTAPULSE_SETTING_STR(voiceTemplates, setVoiceTemplates, kVoiceTemplates, "[]", voiceTemplatesChanged)
+DICTAPULSE_SETTING_STR(toneStyle, setToneStyle, kToneStyle, "off", toneStyleChanged)
+DICTAPULSE_SETTING_BOOL(devModeEnabled, setDevModeEnabled, kDevModeEnabled, false, devModeEnabledChanged)
+DICTAPULSE_SETTING_STR(devJargon, setDevJargon, kDevJargon, "", devJargonChanged)
+
 QStringList Settings::enabledLanguages() const
 {
     return m_store.value(kEnabledLanguages, QStringList { "en" }).toStringList();
@@ -246,6 +263,13 @@ void Settings::resetToDefaults()
     emit dictionaryBiasChanged();
     emit perAppRulesChanged();
     emit perAppRulesEnabledChanged();
+    emit refineSmartListsChanged();
+    emit refineBacktrackChanged();
+    emit refineAutoPunctuationChanged();
+    emit voiceTemplatesChanged();
+    emit toneStyleChanged();
+    emit devModeEnabledChanged();
+    emit devJargonChanged();
 }
 
 } // namespace dictapulse

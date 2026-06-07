@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
@@ -35,7 +37,7 @@ ApplicationWindow {
         { label: qsTr("Language"),      emoji: "🌐", file: "pages/LanguagePage.qml" },
         { label: qsTr("Output"),        emoji: "↪", file: "pages/OutputPage.qml" },
         { label: qsTr("Cleanup"),       emoji: "✨", file: "pages/CleanupPage.qml" },
-        { label: qsTr("Dictionary"),    emoji: "📖", file: "pages/DictionaryPage.qml" },
+        { label: qsTr("Profile"),       emoji: "👤", file: "pages/ProfilePage.qml" },
         { label: qsTr("Backend"),       emoji: "⚙", file: "pages/BackendPage.qml" },
         { label: qsTr("Overlay"),       emoji: "◐", file: "pages/OverlayAppearancePage.qml" },
         { label: qsTr("Privacy"),       emoji: "🔒", file: "pages/PrivacyPage.qml" },

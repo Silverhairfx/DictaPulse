@@ -1,10 +1,14 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "app/Controller.h"
 #include "app/Settings.h"
 #include "app/ThemeProvider.h"
 #include "core/cleanup/CleanupService.h"
 #include "core/cleanup/SecretStore.h"
+#include "app/Provenance.h"
 #include "core/hardware/HardwareInfo.h"
 #include "core/models/ModelManager.h"
+#include "core/profile/ProfileStats.h"
 #include "platform/linux/LinuxAdapter.h"
 
 #include <QApplication>
@@ -144,8 +148,11 @@ int main(int argc, char* argv[])
     secrets->preload({QStringLiteral("anthropic"), QStringLiteral("openai"), QStringLiteral("custom")});
     auto* cleanup = new dictapulse::CleanupService(&app);
 
+    // Usage stats power the Profile dashboard and are part of the user's profile.
+    auto* profileStats = new dictapulse::ProfileStats(&app);
+
     auto* controller = new dictapulse::Controller(settings, models, hardware, platform,
-                                                  cleanup, secrets, &app);
+                                                  cleanup, secrets, profileStats, &app);
 
     // Wire notifications: the controller emits notify(); route it to the tray
     // notification, gated by the user's "notifications" toggle. (Previously the
@@ -189,6 +196,12 @@ int main(int argc, char* argv[])
     engine.rootContext()->setContextProperty("modelManager", models);
     engine.rootContext()->setContextProperty("hardwareInfo", hardware);
     engine.rootContext()->setContextProperty("secrets", secrets);
+    engine.rootContext()->setContextProperty("profileStats", profileStats);
+    engine.rootContext()->setContextProperty("buildProvenance",
+                                             QString::fromLatin1(dictapulse::kProvenanceId));
+    // Origin marker in the startup log (also lives in the binary + About page).
+    std::fprintf(stderr, "[DictaPulse] %s\n", dictapulse::kProvenanceId);
+    std::fflush(stderr);
     // Dev helper: DICTAPULSE_PAGE=<index> opens the window on a specific page
     // (used by the UI screenshot/QA pass; harmless otherwise).
     bool pageOk = false;

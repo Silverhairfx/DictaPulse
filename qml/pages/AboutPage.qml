@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -15,7 +17,23 @@ ScrollView {
                 color: Theme.text
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
-                text: qsTr("DictaPulse is a local-first AI voice dictation tool for KDE Plasma.\nVersion 0.1.0 — free software under the GPL-3.0 license.")
+                text: qsTr("DictaPulse is a local-first AI voice dictation tool for KDE Plasma.\nVersion 0.1.0 (beta) — free software under the GPL-3.0 license.")
+            }
+            Label {
+                color: Theme.textDim
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+                font.pixelSize: 12
+                text: qsTr("Built by Tymour Kadry (@silverhairfx). © ETK Technologies — https://etk-tech.com")
+            }
+            Label {
+                color: Theme.textDim
+                Layout.fillWidth: true
+                font.pixelSize: 9
+                font.family: "monospace"
+                elide: Label.ElideRight
+                opacity: 0.5
+                text: buildProvenance
             }
             Label {
                 color: Theme.textDim
