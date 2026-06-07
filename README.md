@@ -1,16 +1,26 @@
 <div align="center">
 
+<img src="resources/icons/dictapulse.svg" width="96" alt="DictaPulse logo" />
+
 # DictaPulse
 
 ### Local AI voice dictation for KDE Plasma — speak anywhere, get polished text.
 
-[![License](https://img.shields.io/badge/license-MIT-7c5cff?style=flat-square)](#license)
+[![License](https://img.shields.io/badge/license-GPL--3.0-7c5cff?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-KDE%20Plasma%206-3aa0ff?style=flat-square&logo=kde&logoColor=white)](https://kde.org)
-[![Qt](https://img.shields.io/badge/Qt-6.6%2B-41cd52?style=flat-square&logo=qt&logoColor=white)](https://www.qt.io)
+[![Qt](https://img.shields.io/badge/Qt-6.9%2B-41cd52?style=flat-square&logo=qt&logoColor=white)](https://www.qt.io)
+[![C++](https://img.shields.io/badge/C%2B%2B-20-00599c?style=flat-square&logo=cplusplus&logoColor=white)](#-build-manually)
 [![whisper.cpp](https://img.shields.io/badge/engine-whisper.cpp-ff5a5a?style=flat-square)](https://github.com/ggml-org/whisper.cpp)
-[![Status](https://img.shields.io/badge/status-MVP-f5a623?style=flat-square)](#roadmap)
+[![Status](https://img.shields.io/badge/status-beta-f5a623?style=flat-square)](#%EF%B8%8F-roadmap)
 
-**Press a shortcut → speak → text appears in the app you're using.** Fully offline. Built on Qt 6 Quick/QML, KDE Frameworks 6, and `whisper.cpp`.
+**Press a shortcut → speak → text appears in the app you're using.**
+Fully offline. Built on Qt 6 Quick/QML, KDE Frameworks 6, and `whisper.cpp`.
+
+<br/>
+
+<img src="docs/screenshots/dashboard-dark.png" width="780" alt="DictaPulse dashboard — dark mode" />
+
+<sub>One settings hub, eleven focused pages, a tactile "clay" design — in dark and light.</sub>
 
 </div>
 
@@ -20,22 +30,41 @@
 
 Voice dictation tools on Linux either depend on the cloud, lock you into a single desktop, or feel like 2008. DictaPulse is built on the simplest possible idea: a global shortcut, a beautiful floating overlay, a fast local Whisper model, and the transcribed text typed straight into whatever you're focused on — Slack, VS Code, your terminal, your browser. No upload. No account. No SaaS dependency.
 
-The KDE Plasma 6 MVP is shipping first. The architecture is cleanly layered so future Windows / macOS / Android-IME / iOS-keyboard ports reuse the same engine.
+The KDE Plasma 6 release is shipping first. The architecture is cleanly layered so future Windows / macOS / Android-IME / iOS-keyboard ports reuse the same engine.
 
 ## ✨ Features
 
 | | |
 |--|--|
-| 🎙️ **Global shortcut → dictate anywhere** | Registered with KGlobalAccel so it works in any focused window, even when DictaPulse is hidden in the tray. |
-| 🌊 **Animated listening overlay** | A small floating pill near the bottom-center with a live waveform reacting to your voice. Premium feel, minimal footprint. |
+| 🎙️ **Global shortcut → dictate anywhere** | Registered with KGlobalAccel so it works in any focused window, even when DictaPulse is hidden in the tray. Toggle, push-to-talk, or auto-stop-on-silence modes. |
+| 🌊 **Animated listening overlay** | A small floating pill with a live waveform reacting to your voice. Position, size, opacity, sounds, and reduced-motion are all configurable. |
 | ⚡ **Direct text insertion** | Transcripts are typed into your active app via `wtype` (Wayland) or `xdotool` (X11). Clipboard is a fallback, not the default. |
 | 🧠 **Local Whisper transcription** | `whisper.cpp` runs entirely on your machine. Audio never leaves the device. |
+| ✨ **Transcript cleanup, your way** | Pick your polish level: offline rules engine (instant, incl. Arabic punctuation), a **local LLM** via Ollama / LM Studio, or a **remote API** (Anthropic / OpenAI / any OpenAI-compatible endpoint). API keys live in your system keyring — never in config files. |
 | 🎛️ **Built-in model manager** | Browse, download, switch, and delete Whisper models from the GUI. Sizes from 75 MB (tiny) to 3 GB (large-v3). |
-| 🌐 **Multilingual** | English, Arabic, Italian, French, German, Spanish, and every other Whisper language. Auto-detect optional. |
-| 🖥️ **CPU / GPU / Hybrid** | CPU works out of the box. Optional Vulkan, CUDA, and ROCm/HIP builds for GPU acceleration. |
-| 🛡️ **Privacy-first** | No telemetry. No recordings on disk by default. Local-only mode. |
-| 🎨 **Native KDE feel** | Qt 6 Quick/QML UI with Fusion styling, system tray via `KStatusNotifierItem`, native KDE notifications. |
-| 🧩 **Cross-platform-ready core** | Engine is platform-agnostic; only the desktop adapter is KDE-specific. |
+| 🌐 **99 languages** | English, Arabic, Italian, French, German, Spanish, Japanese, Chinese… the full Whisper set, with constrained auto-detect so it never drifts to a wrong-but-similar language. |
+| 🖥️ **CPU / GPU / Hybrid** | CPU works out of the box. Optional Vulkan, CUDA, and ROCm/HIP builds for GPU acceleration, with automatic hardware detection. |
+| 🛡️ **Privacy-first** | No telemetry. No recordings on disk by default. Local-only by design — cloud cleanup is strictly opt-in. |
+| 🎨 **Tactile "clay" design** | A custom QML design system: pillow-embossed surfaces, press physics on every button, serif display headlines, and matching **dark & light** themes that follow your system or your mood. |
+| 🧩 **Cross-platform-ready core** | The engine is platform-agnostic; only the desktop adapter is KDE-specific. |
+
+---
+
+## 🖼️ A look around
+
+<div align="center">
+
+| Dark | Light |
+|:---:|:---:|
+| <img src="docs/screenshots/dashboard-dark.png" alt="Dashboard dark" /> | <img src="docs/screenshots/dashboard-light.png" alt="Dashboard light" /> |
+| <img src="docs/screenshots/language-dark.png" alt="Language dark" /> | <img src="docs/screenshots/language-light.png" alt="Language light" /> |
+
+| | |
+|:---:|:---:|
+| <img src="docs/screenshots/models-dark.png" alt="Model manager" /> | <img src="docs/screenshots/output-dark.png" alt="Output settings" /> |
+| <img src="docs/screenshots/shortcuts-dark.png" alt="Shortcuts" /> | <img src="docs/screenshots/dialog-light.png" alt="Cleanup providers" /> |
+
+</div>
 
 ---
 
@@ -67,8 +96,8 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 
 ```bash
 ./scripts/install.sh --vulkan     # Cross-vendor GPU acceleration
-./scripts/install.sh --cuda       # NVIDIA only (requires CUDA toolkit)
-./scripts/install.sh --rocm       # AMD only (requires ROCm/HIP)
+./scripts/install.sh --cuda      # NVIDIA only (requires CUDA toolkit)
+./scripts/install.sh --rocm      # AMD only (requires ROCm/HIP)
 ```
 
 GPU support is **off by default** so the first build stays fast and dependency-light.
@@ -79,9 +108,9 @@ GPU support is **off by default** so the first build stays fast and dependency-l
 
 1. Launch **DictaPulse** from your KDE launcher (or run `dictapulse`).
 2. The settings window opens. Go to **Models** and click **Download** on `Base (multilingual)` (~150 MB, fast, good quality). Tip: pick `.en` variants if you only dictate in English — they're a touch more accurate.
-3. Go to **Shortcuts**. The default is `Ctrl+Alt+Space`. Change it if you like, then click **Apply shortcuts**.
+3. Go to **Shortcuts**. The default is `Ctrl+Alt+Space`. Change it if you like — shortcuts apply instantly.
 4. Close the settings window — it minimizes to the **tray** (microphone icon). The app keeps running.
-5. **Anywhere** — in Slack, VS Code, a Reddit comment box, your terminal — press the shortcut, watch the overlay appear, speak naturally, then either press the shortcut again or just stop talking (auto-stop kicks in after 1.2 s of silence). Your transcript is typed straight into the field.
+5. **Anywhere** — in Slack, VS Code, a Reddit comment box, your terminal — press the shortcut, watch the overlay appear, speak naturally, then either press the shortcut again or just stop talking (auto-stop kicks in after silence). Your transcript is typed straight into the field.
 
 That's it.
 
@@ -89,20 +118,34 @@ That's it.
 
 ## 📖 Settings tour
 
-The settings window has ten pages. Quick map:
+The settings window has eleven pages. Quick map:
 
 | Page | What it controls |
 |------|------------------|
-| **Dashboard**   | Live status, the last transcript, quick info card. Start/stop manually from here too. |
+| **Dashboard**   | Live status, mic level meter, the last transcript, quick info card. Start/stop manually from here too. |
 | **Shortcuts**   | Global hotkeys (KGlobalAccel) and dictation mode: toggle, push-to-talk, or auto-stop. |
 | **Models**      | Download, switch, and delete Whisper models. Shows size, speed, accuracy, RAM hint. |
-| **Language**    | Default language, enabled languages, optional auto-detect. |
-| **Output**      | Direct insertion vs clipboard vs copy+paste. Cleanup, capitalization, filler-word removal. |
+| **Language**    | Default language, enabled-languages set (constrains auto-detect), translate-to-English. |
+| **Output**      | Direct insertion vs clipboard vs copy+paste. Capitalization, filler-word removal, trailing space. |
+| **Cleanup**     | Transcript polish: rules engine, local LLM (Ollama / LM Studio), or remote API (Anthropic / OpenAI) with keyring-stored keys and a custom system prompt. |
 | **Backend**     | CPU/GPU/Hybrid mode, acceleration API picker, thread count. Detects your hardware automatically. |
-| **Overlay**     | Position (bottom/top/cursor), opacity, waveform, reduce-motion mode. |
+| **Overlay**     | Position (bottom/top/cursor), size with live preview, opacity, waveform, sound cues, reduce-motion. |
 | **Privacy**     | Recording storage, telemetry toggle (off by default and currently a no-op). |
-| **Advanced**    | VAD threshold, silence-to-stop timing, max recording duration, autostart, reset-all. |
-| **About**       | Version, credits, repo link. |
+| **Advanced**    | VAD threshold, input gain & auto-normalize, silence-to-stop timing, max duration, autostart, tray behavior, reset-all. |
+| **About**       | Version, credits, license, repo link. |
+
+---
+
+## 🎨 The design system
+
+The UI is a hand-built QML design language — no stock widget look:
+
+- **Clay surfaces** — every card, button, and input is "molded" out of the canvas with an inset top sheen, a pillow shade, and a plush drop shadow (three depth tiers: raised, small, pressed).
+- **Press physics** — buttons lift 1 px on hover and sink into the canvas on press; toggles slide with a spring; checkmarks pop.
+- **Two faces** — a white *tactile-pop* light theme with vivid indigo, and a deep blue-slate dark theme with a luminous accent. Follows the system scheme or your explicit choice, switchable live from the sidebar.
+- **Serif display headlines** — DM Serif Display for page titles and card headers, with atmospheric radial washes behind the canvas.
+
+All tokens live in a single C++ `Theme` singleton (`src/app/ThemeProvider.*`), and the components (`qml/components/Clay*.qml`) are reusable drop-ins: `ClayButton`, `ClaySwitch`, `ClayComboBox`, `ClaySlider`, `ClaySpinBox`, `ClayTextField`, `ClayDialog`, and friends.
 
 ---
 
@@ -118,15 +161,16 @@ DictaPulse is laid out as a **platform-agnostic core** with a thin **desktop ada
                │  signals / Q_PROPERTY
 ┌──────────────▼─────────────────────────────────────────────┐
 │                    Controller (C++)                        │
-│  Wires shortcuts → audio capture → whisper → injection     │
-└─────┬────────┬────────┬────────┬───────────┬───────────────┘
-      │        │        │        │           │
-      ▼        ▼        ▼        ▼           ▼
-  ┌────────┐ ┌──────┐ ┌──────┐ ┌────────┐ ┌────────────────┐
-  │ Audio  │ │Whisper│ │Model │ │  Text  │ │   Platform     │
-  │Capture │ │Engine │ │Manager│ │Process│ │   Adapter      │
-  │(Qt MM) │ │(.cpp) │ │(HTTP)│ │       │ │ (KDE / wtype)  │
-  └────────┘ └──────┘ └──────┘ └────────┘ └────────────────┘
+│  Wires shortcuts → audio capture → whisper → cleanup →     │
+│  injection                                                 │
+└─────┬────────┬────────┬────────┬──────────┬────────────────┘
+      │        │        │        │          │
+      ▼        ▼        ▼        ▼          ▼
+  ┌────────┐ ┌───────┐ ┌───────┐ ┌────────┐ ┌────────────────┐
+  │ Audio  │ │Whisper│ │ Model │ │Cleanup │ │   Platform     │
+  │Capture │ │Engine │ │Manager│ │Service │ │   Adapter      │
+  │(Qt MM) │ │(.cpp) │ │(HTTP) │ │+Keyring│ │ (KDE / wtype)  │
+  └────────┘ └───────┘ └───────┘ └────────┘ └────────────────┘
 ```
 
 Source tree:
@@ -137,26 +181,29 @@ DictaPulse/
 ├── src/
 │   ├── main.cpp                QApplication + QML engine + DI wiring
 │   ├── app/
-│   │   ├── Controller.{h,cpp}  State machine, exposed to QML
-│   │   └── Settings.{h,cpp}    QSettings-backed preferences
+│   │   ├── Controller.{h,cpp}      State machine, exposed to QML
+│   │   ├── Settings.{h,cpp}        QSettings-backed preferences
+│   │   └── ThemeProvider.{h,cpp}   Clay design tokens (QML `Theme` singleton)
 │   ├── core/
-│   │   ├── audio/              16 kHz mono PCM capture, VAD
+│   │   ├── audio/              16 kHz mono PCM capture, VAD, auto-gain
 │   │   ├── transcription/      whisper.cpp wrapper (threaded)
 │   │   ├── models/             Catalog + downloader + ListModel
-│   │   ├── text/               Cleanup, capitalize, filler removal
+│   │   ├── text/               Rules cleanup, capitalize, filler removal
+│   │   ├── cleanup/            LLM cleanup providers + keyring secret store
 │   │   └── hardware/           CPU/GPU/RAM detection
 │   └── platform/
 │       ├── PlatformAdapter.h   Abstract surface (future-OS friendly)
 │       └── linux/              KDE adapter: KGlobalAccel, wtype, KStatusNotifierItem
 ├── qml/
-│   ├── Main.qml                Sidebar + page Loader
+│   ├── Main.qml                Sidebar shell + page Loader
 │   ├── Overlay.qml             Frameless transparent always-on-top pill
-│   ├── Theme.qml               Design tokens (singleton)
-│   ├── components/             Reusable UI: Waveform, SettingRow, SectionCard…
+│   ├── components/             Clay design kit: ClayButton, ClaySwitch, ClayDialog…
 │   └── pages/                  Dashboard / Shortcuts / Models / Language / …
 ├── resources/
 │   ├── icons/dictapulse.svg
-│   └── desktop/dictapulse.desktop
+│   ├── fonts/                  DM Serif Display (OFL)
+│   ├── sounds/                 Overlay pop cues
+│   └── desktop/dictapulse.desktop.in
 └── scripts/install.sh
 ```
 
@@ -195,9 +242,10 @@ sudo cmake --install build
 
 | Package | Why |
 |---------|-----|
-| **KDE Plasma 6.6+** (Wayland or X11) | Target environment for the MVP |
-| **Qt 6.6+** (Core, Gui, Widgets, Qml, Quick, QuickControls2, Multimedia, Svg, Network, DBus) | UI + audio |
-| **KDE Frameworks 6** (KGlobalAccel, KStatusNotifierItem, KNotifications, KConfig) | Native KDE integration |
+| **KDE Plasma 6** (Wayland or X11) | Target environment |
+| **Qt 6.9+** (Core, Gui, Widgets, Qml, Quick, QuickControls2, Multimedia, Svg, Network, DBus) | UI + audio (6.9 for the `RectangularShadow` the clay design uses) |
+| **KDE Frameworks 6** (KGlobalAccel, KStatusNotifierItem, KNotifications, KConfig, KColorScheme, KWindowSystem) | Native KDE integration |
+| **QtKeychain (Qt6)** | Keyring storage for LLM-cleanup API keys |
 | **PipeWire / PulseAudio** | Microphone capture |
 | **wtype** (Wayland) or **xdotool** (X11) | Text injection — `wtype` is recommended |
 
@@ -214,8 +262,9 @@ sudo cmake --install build
 ```bash
 sudo pacman -S --needed \
     qt6-base qt6-declarative qt6-multimedia qt6-svg qt6-wayland \
-    extra-cmake-modules \
+    extra-cmake-modules qtkeychain-qt6 \
     kglobalaccel kstatusnotifieritem knotifications kconfig \
+    kcolorscheme kwindowsystem \
     cmake ninja gcc git wtype
 ```
 
@@ -249,6 +298,8 @@ Pick a **multilingual** model (`base`, `small`, `medium`, `large-v3`, `large-v3-
 ## 🛣️ Roadmap
 
 - [x] **MVP** — KDE Plasma 6 + tray + overlay + whisper.cpp + wtype + model manager + language picker + settings persistence
+- [x] **LLM transcript cleanup** — rules / local LLM / remote API providers with keyring-stored keys
+- [x] **Clay design system** — tactile dark & light themes, custom component kit
 - [ ] **Personal dictionary** — case-sensitive replacements per language
 - [ ] **Live partial transcript** in the overlay
 - [ ] **Per-app output rules** (e.g., always paste in terminals)
@@ -266,13 +317,13 @@ Pick a **multilingual** model (`base`, `small`, `medium`, `large-v3`, `large-v3-
 <details>
 <summary><b>Does any audio leave my machine?</b></summary>
 
-No. Whisper runs locally via `whisper.cpp`. Models are downloaded from `huggingface.co` over HTTPS once, then everything is on-device.
+No. Whisper runs locally via `whisper.cpp`. Models are downloaded from `huggingface.co` over HTTPS once, then everything is on-device. The only exception is the **optional** remote-API cleanup provider — if you enable it, the transcribed *text* (never audio) is sent to the provider you chose.
 </details>
 
 <details>
 <summary><b>I press the shortcut but nothing happens.</b></summary>
 
-1. Make sure you clicked **Apply shortcuts** on the Shortcuts page.
+1. Check the shortcut on the Shortcuts page — capture fields apply instantly, but **Re-apply shortcuts** forces a re-register.
 2. Open **KDE System Settings → Shortcuts → Global Shortcuts → DictaPulse** and confirm it's set there.
 3. Some Plasma versions block global shortcuts until the registering app has been seen once — try restarting Plasma or logging out/in.
 </details>
@@ -290,7 +341,7 @@ On Wayland, the Linux input model doesn't expose synthetic key events to every w
 <details>
 <summary><b>How do I switch between English and Arabic on the fly?</b></summary>
 
-Pick a **multilingual** model in the Models page. Then on the Language page enable both English and Arabic and turn on **Auto-detect**. Whisper will figure out which language you spoke from the first ~30 s of audio.
+Pick a **multilingual** model in the Models page. Then on the Language page enable both English and Arabic and turn on **Auto-detect**. Detection is constrained to your enabled set, so it can't drift to a wrong-but-similar language.
 </details>
 
 <details>
@@ -300,9 +351,15 @@ Yes. Rebuild with `./scripts/install.sh --vulkan` (cross-vendor), `--cuda` (NVID
 </details>
 
 <details>
+<summary><b>What does the LLM cleanup send, and where are my API keys?</b></summary>
+
+Cleanup sends your transcribed text plus your system prompt to the endpoint you configured — a local server (Ollama / LM Studio, nothing leaves your machine) or a remote API. Keys are stored in your system keyring (KWallet / libsecret) via QtKeychain, never in DictaPulse's config file.
+</details>
+
+<details>
 <summary><b>Where are settings and models stored?</b></summary>
 
-- Preferences: `~/.config/DictaPulse/DictaPulse.conf`
+- Preferences: `~/.config/DictaPulse/DictaPulse.ini`
 - Models: `~/.local/share/DictaPulse/models/`
 </details>
 
@@ -318,9 +375,9 @@ Yes. Rebuild with `./scripts/install.sh --vulkan` (cross-vendor), `--cuda` (NVID
 
 ## 🤝 Contributing
 
-This is a one-developer MVP right now. Issues, ideas, and PRs welcome once the public beta lands. If you spot a crash on Plasma 6 in the meantime, please file an issue with:
+Issues, ideas, and PRs are welcome. If you spot a crash on Plasma 6, please file an issue with:
 
-- Output of `inxi -Fxz` (or `uname -a` + `kf6-config --version`)
+- Output of `inxi -Fxz` (or `uname -a` + `plasmashell --version`)
 - Whether you're on Wayland or X11
 - The active model and backend mode
 - A reproduction recipe
@@ -329,11 +386,13 @@ This is a one-developer MVP right now. Issues, ideas, and PRs welcome once the p
 
 ## 📜 License
 
-MIT — see [LICENSE](LICENSE) when added. Bundled dependencies retain their own licenses:
+**GPL-3.0** — see [LICENSE](LICENSE). Bundled dependencies retain their own licenses:
 
 - [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — MIT
 - [Qt 6](https://www.qt.io/licensing) — LGPL v3 / commercial
 - [KDE Frameworks 6](https://kde.org/products/frameworks/) — LGPL
+- [QtKeychain](https://github.com/frankosterfeld/qtkeychain) — BSD-3-Clause
+- [DM Serif Display](https://fonts.google.com/specimen/DM+Serif+Display) — SIL Open Font License 1.1
 
 ---
 

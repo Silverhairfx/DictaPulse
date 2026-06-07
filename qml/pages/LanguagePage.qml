@@ -133,7 +133,7 @@ ScrollView {
             subtitle: qsTr("Speech is transcribed in this language unless auto-detect is on. English-only models (model name ends in .en) always use English regardless of this setting.")
             SettingRow {
                 label: qsTr("Default")
-                ComboBox {
+                ClayComboBox {
                     width: 220
                     textRole: "name"
                     valueRole: "code"
@@ -148,7 +148,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Auto-detect language")
                 hint: qsTr("Whisper detects the language from the first ~30s. Detection is restricted to your enabled languages below, so it never drifts to a wrong-but-similar one.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.autoDetectLanguage
                     onToggled: appSettings.autoDetectLanguage = checked
                 }
@@ -159,7 +159,7 @@ ScrollView {
             title: qsTr("Enabled languages")
             subtitle: qsTr("Tick every language you dictate in — Whisper supports them all. Auto-detect is constrained to this set; enabling exactly one forces that language. Also used for per-language vocabulary.")
 
-            TextField {
+            ClayTextField {
                 Layout.fillWidth: true
                 placeholderText: qsTr("Search languages…")
                 text: pageRoot.filter
@@ -177,7 +177,7 @@ ScrollView {
 
             Repeater {
                 model: pageRoot.filteredLanguages()
-                delegate: CheckBox {
+                delegate: ClayCheckBox {
                     id: langCheck
                     required property var modelData
                     Layout.fillWidth: true

@@ -16,7 +16,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Store recordings")
                 hint: qsTr("If off (default), audio is held in memory only and discarded after transcription.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.storeRecordings
                     onToggled: appSettings.storeRecordings = checked
                 }
@@ -25,7 +25,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Anonymous telemetry")
                 hint: qsTr("Off by default. No personal data is sent — only crash counts and feature usage. (Stub for now: nothing is collected.)")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.telemetryEnabled
                     onToggled: appSettings.telemetryEnabled = checked
                 }

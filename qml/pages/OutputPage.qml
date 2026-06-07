@@ -15,7 +15,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Mode")
-                ComboBox {
+                ClayComboBox {
                     width: 260
                     model: [
                         { value: "insert",     label: qsTr("Direct insertion (default)") },
@@ -32,7 +32,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Fall back to clipboard if insertion fails")
                 hint: qsTr("Recommended on Wayland — direct injection can fail in privileged windows.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.clipboardFallback
                     onToggled: appSettings.clipboardFallback = checked
                 }
@@ -40,7 +40,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Add trailing space")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.addTrailingSpace
                     onToggled: appSettings.addTrailingSpace = checked
                 }
@@ -51,14 +51,14 @@ ScrollView {
             title: qsTr("Text cleanup")
             SettingRow {
                 label: qsTr("Cleanup punctuation & spacing")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.cleanupEnabled
                     onToggled: appSettings.cleanupEnabled = checked
                 }
             }
             SettingRow {
                 label: qsTr("Capitalize sentences")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.capitalizeSentences
                     onToggled: appSettings.capitalizeSentences = checked
                 }
@@ -66,7 +66,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Remove filler words")
                 hint: qsTr("Drops common English fillers: um, uh, erm, mm, hmm. English only.")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.removeFillerWords
                     onToggled: appSettings.removeFillerWords = checked
                 }

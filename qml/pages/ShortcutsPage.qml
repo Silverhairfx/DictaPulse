@@ -50,8 +50,9 @@ ScrollView {
             RowLayout {
                 Layout.fillWidth: true
                 Item { Layout.fillWidth: true }
-                Button {
+                ClayButton {
                     text: qsTr("Re-apply shortcuts")
+                    variant: "secondary"
                     onClicked: controller.applyShortcuts()
                 }
             }
@@ -62,7 +63,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Mode")
                 hint: qsTr("Push-to-talk holds while you speak. Toggle starts/stops with separate presses. Auto-stop ends after silence.")
-                ComboBox {
+                ClayComboBox {
                     width: 280
                     textRole: "label"
                     valueRole: "value"

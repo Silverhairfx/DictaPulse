@@ -4,38 +4,59 @@
 #include <QObject>
 #include <QString>
 
-class QWindow;
-
 namespace dictapulse {
 
 // Central design tokens for the QML UI, exposed to QML as the `Theme` singleton.
-// Colors adapt to the active KDE color scheme (light/dark) and the system accent
-// color; a manual preference ("system"/"light"/"dark") can override the mode.
-// Also drives the frosted-glass window blur via KWindowEffects.
 //
-// Surfaces are intentionally translucent so the KWin blur behind the window
-// shows through (the "glass" look). If blur is unavailable the alphas still
-// read as a tinted panel, just without the live frost.
+// "Tactile pop" clay design: opaque surfaces molded out
+// of the canvas with a pillow-emboss treatment — inset top-left highlight,
+// inset bottom-right shade, plush drop shadow. Light mode is a white canvas
+// with vivid indigo primary and cool-violet neutrals; dark mode is a deep
+// blue-slate scale with a luminous indigo accent.
+//
+// The mode follows the system (KDE color scheme) unless a manual preference
+// ("light"/"dark") overrides it. The accent is fixed brand indigo per mode.
 class ThemeProvider : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString preference READ preference WRITE setPreference NOTIFY changed)
     Q_PROPERTY(QString mode READ mode NOTIFY changed)
-    Q_PROPERTY(bool blurEnabled READ blurEnabled NOTIFY changed)
 
+    // Surfaces
     Q_PROPERTY(QColor bg READ bg NOTIFY changed)
     Q_PROPERTY(QColor bgRaised READ bgRaised NOTIFY changed)
     Q_PROPERTY(QColor bgHover READ bgHover NOTIFY changed)
+    Q_PROPERTY(QColor bgWell READ bgWell NOTIFY changed)
     Q_PROPERTY(QColor border READ border NOTIFY changed)
     Q_PROPERTY(QColor borderHi READ borderHi NOTIFY changed)
+
+    // Text
     Q_PROPERTY(QColor text READ text NOTIFY changed)
     Q_PROPERTY(QColor textDim READ textDim NOTIFY changed)
+
+    // Accent (brand indigo) + status hues
     Q_PROPERTY(QColor accent READ accent NOTIFY changed)
     Q_PROPERTY(QColor accentSoft READ accentSoft NOTIFY changed)
+    Q_PROPERTY(QColor accentSoftFg READ accentSoftFg NOTIFY changed)
     Q_PROPERTY(QColor onAccent READ onAccent NOTIFY changed)
     Q_PROPERTY(QColor success READ success NOTIFY changed)
     Q_PROPERTY(QColor warning READ warning NOTIFY changed)
     Q_PROPERTY(QColor danger READ danger NOTIFY changed)
+    Q_PROPERTY(QColor info READ info NOTIFY changed)
     Q_PROPERTY(QColor overlayBg READ overlayBg NOTIFY changed)
+
+    // Clay (pillow emboss) shadow colors
+    Q_PROPERTY(QColor clayHighlight READ clayHighlight NOTIFY changed)
+    Q_PROPERTY(QColor clayShade READ clayShade NOTIFY changed)
+    Q_PROPERTY(QColor clayDrop READ clayDrop NOTIFY changed)
+    Q_PROPERTY(QColor clayDropSoft READ clayDropSoft NOTIFY changed)
+
+    // Atmospheric canvas washes (radial gradients behind everything)
+    Q_PROPERTY(QColor washA READ washA NOTIFY changed)
+    Q_PROPERTY(QColor washB READ washB NOTIFY changed)
+    Q_PROPERTY(QColor washC READ washC NOTIFY changed)
+
+    // Display (headline) font family — serif, loaded from resources at startup.
+    Q_PROPERTY(QString displayFont READ displayFont NOTIFY changed)
 
     Q_PROPERTY(int radius READ radius CONSTANT)
     Q_PROPERTY(int radiusSm READ radiusSm CONSTANT)
@@ -49,32 +70,42 @@ public:
     QString preference() const { return m_preference; }
     void setPreference(const QString& value);
     QString mode() const { return m_dark ? QStringLiteral("dark") : QStringLiteral("light"); }
-    bool blurEnabled() const { return m_blurEnabled; }
 
     QColor bg() const;
     QColor bgRaised() const;
     QColor bgHover() const;
+    QColor bgWell() const;
     QColor border() const;
     QColor borderHi() const;
     QColor text() const;
     QColor textDim() const;
-    QColor accent() const { return m_accent; }
+    QColor accent() const;
     QColor accentSoft() const;
+    QColor accentSoftFg() const;
     QColor onAccent() const;
-    QColor success() const { return QColor(0x2e, 0xcc, 0x71); }
-    QColor warning() const { return QColor(0xf5, 0xa6, 0x23); }
-    QColor danger() const { return QColor(0xff, 0x5a, 0x5a); }
+    QColor success() const;
+    QColor warning() const;
+    QColor danger() const;
+    QColor info() const;
     QColor overlayBg() const;
 
-    int radius() const { return 16; }
-    int radiusSm() const { return 10; }
+    QColor clayHighlight() const;
+    QColor clayShade() const;
+    QColor clayDrop() const;
+    QColor clayDropSoft() const;
+
+    QColor washA() const;
+    QColor washB() const;
+    QColor washC() const;
+
+    QString displayFont() const { return m_displayFont; }
+    void setDisplayFont(const QString& family);
+
+    int radius() const { return 12; }
+    int radiusSm() const { return 9; }
     int pad() const { return 18; }
     int padSm() const { return 11; }
     int gap() const { return 13; }
-
-    // Request the compositor to frost the desktop behind this window. No-op
-    // without KF6/KWin; safe to call once the window has a platform surface.
-    Q_INVOKABLE void enableBlur(QWindow* window);
 
 signals:
     void changed();
@@ -86,9 +117,8 @@ private:
     void recompute();
 
     QString m_preference = QStringLiteral("system");
+    QString m_displayFont = QStringLiteral("serif");
     bool m_dark = true;
-    bool m_blurEnabled = false;
-    QColor m_accent = QColor(0x7c, 0x5c, 0xff);
 };
 
 } // namespace dictapulse

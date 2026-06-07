@@ -68,14 +68,27 @@ Window {
         id: pill
         anchors.fill: parent
         radius: height / 2
-        color: "black"          // solid black background, no border
-        border.width: 0
+        color: Theme.overlayBg
+        border.width: 1
+        border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.45)
 
         // Fade the content in/out instead of mapping the window.
         opacity: overlayWin.active ? 1.0 : 0.0
         Behavior on opacity { NumberAnimation { duration: 160 } }
 
         readonly property real scale: appSettings.overlayScale
+
+        // Clay sheen: faint light along the top of the capsule.
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: height / 2
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.10) }
+                GradientStop { position: 0.35; color: "transparent" }
+                GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.25) }
+            }
+        }
 
         RowLayout {
             anchors.fill: parent

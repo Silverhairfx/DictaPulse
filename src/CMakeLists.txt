@@ -20,6 +20,18 @@ set(DICTAPULSE_QML_FILES
     "${DICTAPULSE_QML_DIR}/components/SettingRow.qml"
     "${DICTAPULSE_QML_DIR}/components/SidebarItem.qml"
     "${DICTAPULSE_QML_DIR}/components/ShortcutCapture.qml"
+    "${DICTAPULSE_QML_DIR}/components/AppBackground.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClaySurface.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClayButton.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClaySwitch.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClayCheckBox.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClaySlider.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClaySpinBox.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClayComboBox.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClayTextField.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClayTextArea.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClayProgressBar.qml"
+    "${DICTAPULSE_QML_DIR}/components/ClayDialog.qml"
 )
 
 foreach(qmlfile IN LISTS DICTAPULSE_QML_FILES)
@@ -36,6 +48,10 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/sounds/pop-in.wav"
 )
 set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/sounds/pop-out.wav"
     PROPERTIES QT_RESOURCE_ALIAS sounds/pop-out.wav
+)
+
+set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/fonts/DMSerifDisplay-Regular.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS fonts/DMSerifDisplay-Regular.ttf
 )
 
 qt_add_executable(dictapulse
@@ -79,6 +95,7 @@ qt_add_qml_module(dictapulse
         ${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg
         ${CMAKE_SOURCE_DIR}/resources/sounds/pop-in.wav
         ${CMAKE_SOURCE_DIR}/resources/sounds/pop-out.wav
+        ${CMAKE_SOURCE_DIR}/resources/fonts/DMSerifDisplay-Regular.ttf
 )
 
 target_link_libraries(dictapulse PRIVATE

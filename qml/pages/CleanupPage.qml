@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import DictaPulse
 
@@ -43,7 +43,7 @@ ScrollView {
             subtitle: qsTr("How each transcript is polished before it's inserted. Rules is offline and instant; Local and Remote send the text to an LLM with your prompt (and, soon, your vocabulary).")
             SettingRow {
                 label: qsTr("Provider")
-                ComboBox {
+                ClayComboBox {
                     Layout.preferredWidth: 300
                     textRole: "name"
                     valueRole: "value"
@@ -74,7 +74,7 @@ ScrollView {
                 label: qsTr("App")
                 RowLayout {
                     spacing: Theme.padSm
-                    ComboBox {
+                    ClayComboBox {
                         Layout.preferredWidth: 200
                         textRole: "name"
                         valueRole: "value"
@@ -89,9 +89,9 @@ ScrollView {
                             if (ep !== "") appSettings.cleanupLocalEndpoint = ep
                         }
                     }
-                    Button {
+                    ClayButton {
                         text: qsTr("Setup help")
-                        flat: true
+                        variant: "ghost"
                         onClicked: localHelp.open()
                     }
                 }
@@ -99,7 +99,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Endpoint")
                 hint: qsTr("Base URL including /v1")
-                TextField {
+                ClayTextField {
                     Layout.preferredWidth: 280
                     text: appSettings.cleanupLocalEndpoint
                     onEditingFinished: appSettings.cleanupLocalEndpoint = text
@@ -108,7 +108,7 @@ ScrollView {
             SettingRow {
                 label: qsTr("Model")
                 hint: qsTr("Leave blank to use whatever model is loaded (LM Studio)")
-                TextField {
+                ClayTextField {
                     Layout.preferredWidth: 280
                     placeholderText: qsTr("e.g. llama-3.1-8b-instruct")
                     text: appSettings.cleanupLocalModel
@@ -127,7 +127,7 @@ ScrollView {
                 label: qsTr("Provider")
                 RowLayout {
                     spacing: Theme.padSm
-                    ComboBox {
+                    ClayComboBox {
                         Layout.preferredWidth: 240
                         textRole: "name"
                         valueRole: "value"
@@ -143,16 +143,16 @@ ScrollView {
                             pageRoot.refreshKey()
                         }
                     }
-                    Button {
+                    ClayButton {
                         text: qsTr("Get a key")
-                        flat: true
+                        variant: "ghost"
                         onClicked: remoteHelp.open()
                     }
                 }
             }
             SettingRow {
                 label: qsTr("Model")
-                TextField {
+                ClayTextField {
                     Layout.preferredWidth: 280
                     text: appSettings.cleanupRemoteModel
                     onEditingFinished: appSettings.cleanupRemoteModel = text
@@ -162,7 +162,7 @@ ScrollView {
                 visible: appSettings.cleanupRemoteProvider === "custom"
                 label: qsTr("Endpoint")
                 hint: qsTr("OpenAI-compatible base URL including /v1")
-                TextField {
+                ClayTextField {
                     Layout.preferredWidth: 280
                     text: appSettings.cleanupRemoteEndpoint
                     onEditingFinished: appSettings.cleanupRemoteEndpoint = text
@@ -174,13 +174,13 @@ ScrollView {
                                           : qsTr("No key saved for %1").arg(appSettings.cleanupRemoteProvider)
                 RowLayout {
                     spacing: Theme.padSm
-                    TextField {
+                    ClayTextField {
                         id: keyField
                         Layout.preferredWidth: 240
                         echoMode: TextInput.Password
                         placeholderText: pageRoot.keyPresent ? "••••••••••••" : qsTr("Paste API key")
                     }
-                    Button {
+                    ClayButton {
                         text: qsTr("Save")
                         enabled: keyField.text.length > 0
                         onClicked: {
@@ -188,9 +188,9 @@ ScrollView {
                             keyField.text = ""
                         }
                     }
-                    Button {
+                    ClayButton {
                         text: qsTr("Clear")
-                        flat: true
+                        variant: "ghost"
                         visible: pageRoot.keyPresent
                         onClicked: secrets.clearKey(appSettings.cleanupRemoteProvider)
                     }
@@ -204,23 +204,16 @@ ScrollView {
             title: qsTr("Instructions")
             subtitle: qsTr("The system prompt sent with every cleanup request.")
 
-            TextArea {
+            ClayTextArea {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 110
-                wrapMode: TextArea.Wrap
                 text: appSettings.cleanupSystemPrompt
                 onEditingFinished: appSettings.cleanupSystemPrompt = text
-                background: Rectangle {
-                    color: Theme.bgHover
-                    radius: Theme.radiusSm
-                    border.color: Theme.border
-                    border.width: 1
-                }
             }
             SettingRow {
                 label: qsTr("Use my vocabulary")
                 hint: qsTr("Bias cleanup toward your saved terms (takes effect once the Vocabulary feature is added).")
-                Switch {
+                ClaySwitch {
                     checked: appSettings.cleanupUseVocab
                     onToggled: appSettings.cleanupUseVocab = checked
                 }
@@ -228,10 +221,9 @@ ScrollView {
         }
     }
 
-    Dialog {
+    ClayDialog {
         id: localHelp
-        anchors.centerIn: Overlay.overlay
-        modal: true
+        anchors.centerIn: Controls.Overlay.overlay
         title: qsTr("Local LLM setup")
         standardButtons: Dialog.Ok
         width: 460
@@ -242,10 +234,9 @@ ScrollView {
         }
     }
 
-    Dialog {
+    ClayDialog {
         id: remoteHelp
-        anchors.centerIn: Overlay.overlay
-        modal: true
+        anchors.centerIn: Controls.Overlay.overlay
         title: qsTr("Getting an API key")
         standardButtons: Dialog.Ok
         width: 460

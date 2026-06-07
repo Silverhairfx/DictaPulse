@@ -8,26 +8,25 @@ import DictaPulse
 ApplicationWindow {
     id: window
     objectName: "mainWin"
-    width: 980
-    height: 640
+    width: 1000
+    height: 660
     minimumWidth: 760
     minimumHeight: 520
     visible: !appSettings.startMinimized
     title: qsTr("DictaPulse")
 
-    // Material controls themed to our glass palette; cascades to all children.
+    // Material is only the fallback chrome (popups, scrollbars); all visible
+    // controls are the custom clay components.
     Material.theme: Theme.mode === "dark" ? Material.Dark : Material.Light
     Material.accent: Theme.accent
     Material.primary: Theme.accent
     Material.foreground: Theme.text
     Material.roundedScale: Material.SmallScale
 
-    // Transparent surface so the KWin blur frosts the desktop behind us; the
-    // frosted tint is drawn by the background item below.
-    color: "transparent"
-    background: Rectangle { color: Theme.bg }
+    // Opaque clay canvas with atmospheric washes.
+    background: AppBackground {}
 
-    property int currentPage: 0
+    property int currentPage: devStartPage >= 0 && devStartPage < pages.length ? devStartPage : 0
     property var pages: [
         { label: qsTr("Dashboard"),     emoji: "◉", file: "pages/DashboardPage.qml" },
         { label: qsTr("Shortcuts"),     emoji: "⌘", file: "pages/ShortcutsPage.qml" },
@@ -65,32 +64,43 @@ ApplicationWindow {
         anchors.margins: 16
         spacing: 16
 
-        // --- Sidebar ---
-        Rectangle {
-            Layout.preferredWidth: 224
+        // --- Sidebar: a raised clay panel ---
+        Item {
+            Layout.preferredWidth: 228
             Layout.fillHeight: true
-            color: Theme.bgRaised
-            radius: Theme.radius
-            border.color: Theme.border
-            border.width: 1
+
+            ClaySurface {
+                anchors.fill: parent
+                tier: "raised"
+                radius: Theme.radius + 2
+                color: Theme.bgRaised
+                borderColor: Theme.border
+                borderWidth: 1
+            }
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 16
+                anchors.margins: 14
                 spacing: 8
 
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 11
-                    Rectangle {
-                        width: 34; height: 34; radius: 10
-                        color: Theme.accentSoft
-                        border.color: Theme.accent
-                        border.width: 1
+
+                    // Logo mark: raised indigo clay tile.
+                    ClaySurface {
+                        implicitWidth: 36
+                        implicitHeight: 36
+                        tier: "sm"
+                        radius: 11
+                        color: Theme.accent
+                        embossStrength: 0.7
+                        borderColor: "transparent"
+                        borderWidth: 0
                         Label {
                             anchors.centerIn: parent
                             text: "◢"
-                            color: Theme.accent
+                            color: Theme.onAccent
                             font.pixelSize: 17
                             font.weight: Font.Bold
                         }
@@ -101,8 +111,8 @@ ApplicationWindow {
                         Label {
                             text: "DictaPulse"
                             color: Theme.text
-                            font.pixelSize: 16
-                            font.weight: Font.DemiBold
+                            font.family: Theme.displayFont
+                            font.pixelSize: 18
                         }
                         Label {
                             text: qsTr("v0.1.0 · KDE Plasma")
@@ -111,26 +121,39 @@ ApplicationWindow {
                         }
                     }
 
-                    // Light / dark toggle. Cycles to an explicit preference;
-                    // the icon reflects what a click switches *to*.
-                    Rectangle {
-                        id: themeToggle
-                        width: 30; height: 30; radius: 8
-                        color: tapHover.hovered ? Theme.bgHover : "transparent"
-                        border.color: Theme.border
-                        border.width: 1
-                        Label {
-                            anchors.centerIn: parent
-                            text: Theme.mode === "dark" ? "☀" : "☾"
-                            color: Theme.text
-                            font.pixelSize: 15
+                    // Light / dark toggle: clay chip. The icon shows what a
+                    // click switches *to*.
+                    // Input lives on this wrapper Item, NOT inside ClaySurface —
+                    // children routed through its default-property alias don't
+                    // receive pointer events.
+                    Item {
+                        implicitWidth: 32
+                        implicitHeight: 32
+
+                        ClaySurface {
+                            id: themeToggle
+                            anchors.fill: parent
+                            tier: themeTap.pressed ? "pressed" : "sm"
+                            radius: 10
+                            color: themeTap.containsMouse ? Theme.bgHover : Theme.bgRaised
+                            borderColor: Theme.border
+                            borderWidth: 1
+                            Label {
+                                anchors.centerIn: parent
+                                text: Theme.mode === "dark" ? "☀" : "☾"
+                                color: Theme.text
+                                font.pixelSize: 15
+                            }
                         }
-                        HoverHandler { id: tapHover }
-                        TapHandler {
-                            onTapped: appSettings.theme =
+                        MouseArea {
+                            id: themeTap
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: appSettings.theme =
                                 (Theme.mode === "dark" ? "light" : "dark")
                         }
-                        ToolTip.visible: tapHover.hovered
+                        ToolTip.visible: themeTap.containsMouse
                         ToolTip.text: Theme.mode === "dark"
                             ? qsTr("Switch to light") : qsTr("Switch to dark")
                     }
@@ -176,16 +199,28 @@ ApplicationWindow {
             }
         }
 
-        // --- Content ---
-        Rectangle {
+        // --- Content: serif page headline + the page itself ---
+        ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: "transparent"
+            spacing: 10
+
+            Label {
+                id: pageTitle
+                text: window.pages[window.currentPage].label
+                color: Theme.text
+                font.family: Theme.displayFont
+                font.pixelSize: 26
+                Layout.leftMargin: 4
+            }
 
             Loader {
                 id: pageLoader
-                anchors.fill: parent
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 source: window.pages[window.currentPage].file
+                opacity: status === Loader.Ready ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 150 } }
             }
         }
     }
@@ -199,13 +234,8 @@ ApplicationWindow {
     Connections {
         target: controller
         function onOverlayRequested(show) {
-            console.log("[Main] onOverlayRequested(" + show + ") fired")
             if (show) overlay.showOverlay()
             else      overlay.hideOverlay()
         }
-    }
-    Component.onCompleted: {
-        console.log("[Main] Component.onCompleted; controller=" + controller
-                    + " overlay=" + overlay)
     }
 }

@@ -35,7 +35,7 @@ ScrollView {
                 Layout.fillWidth: true
                 spacing: Theme.gap
 
-                ComboBox {
+                ClayComboBox {
                     id: langBox
                     Layout.preferredWidth: 200
                     enabled: !appSettings.autoDetectLanguage
@@ -49,13 +49,13 @@ ScrollView {
                     onActivated: appSettings.defaultLanguage = currentValue
                 }
 
-                CheckBox {
+                ClayCheckBox {
                     text: qsTr("Auto-detect")
                     checked: appSettings.autoDetectLanguage
                     onToggled: appSettings.autoDetectLanguage = checked
                 }
 
-                CheckBox {
+                ClayCheckBox {
                     text: qsTr("Translate to English")
                     checked: appSettings.translateToEnglish
                     onToggled: appSettings.translateToEnglish = checked
@@ -126,7 +126,7 @@ ScrollView {
                     Layout.fillWidth: true
                     height: 6
                     radius: 3
-                    color: Theme.bg
+                    color: Theme.bgWell
                     border.color: Theme.border
                     Rectangle {
                         width: Math.min(parent.width, parent.width * Math.min(1.0, controller.level * 12))
@@ -149,12 +149,14 @@ ScrollView {
             RowLayout {
                 spacing: Theme.gap
                 Layout.fillWidth: true
-                Button {
+                ClayButton {
                     text: controller.state === "listening" ? qsTr("Stop") : qsTr("Start dictation")
+                    variant: controller.state === "listening" ? "destructive" : "default"
                     onClicked: controller.toggleDictation()
                 }
-                Button {
+                ClayButton {
                     text: qsTr("Cancel")
+                    variant: "outline"
                     enabled: controller.state === "listening" || controller.state === "processing"
                     onClicked: controller.cancelDictation()
                 }
@@ -163,14 +165,11 @@ ScrollView {
 
         SectionCard {
             title: qsTr("Last transcript")
-            TextArea {
+            ClayTextArea {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 120
                 readOnly: true
-                wrapMode: TextArea.Wrap
                 text: controller.lastTranscript
-                color: Theme.text
-                background: Rectangle { color: Theme.bg; border.color: Theme.border; radius: 8 }
                 placeholderText: qsTr("Your dictation will appear here after the first run.")
             }
         }
