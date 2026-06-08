@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(DictaPulse
-    VERSION 0.1.0
+    VERSION 0.1.1
     DESCRIPTION "Local AI voice dictation for KDE Plasma"
     HOMEPAGE_URL "https://github.com/Silverhairfx/DictaPulse"
     LANGUAGES C CXX
