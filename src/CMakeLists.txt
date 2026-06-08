@@ -161,8 +161,10 @@ install(TARGETS dictapulse RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # /usr/local/bin into the file when the user installed to ~/.local, breaking
 # the KDE launcher.)
 install(CODE "
+    # Exec= must point at the FINAL install location (no DESTDIR), but the file
+    # itself is staged under DESTDIR so distro/AppImage packaging works.
     set(_bindir \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}\")
-    set(_dest_dir \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/applications\")
+    set(_dest_dir \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/applications\")
     file(MAKE_DIRECTORY \"\${_dest_dir}\")
     file(READ \"${CMAKE_SOURCE_DIR}/resources/desktop/dictapulse.desktop.in\" _desktop)
     string(REPLACE \"@CMAKE_INSTALL_FULL_BINDIR@\" \"\${_bindir}\" _desktop \"\${_desktop}\")
