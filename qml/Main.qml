@@ -31,18 +31,18 @@ ApplicationWindow {
 
     property int currentPage: devStartPage >= 0 && devStartPage < pages.length ? devStartPage : 0
     property var pages: [
-        { label: qsTr("Dashboard"),     emoji: "◉", file: "pages/DashboardPage.qml" },
-        { label: qsTr("Shortcuts"),     emoji: "⌘", file: "pages/ShortcutsPage.qml" },
-        { label: qsTr("Models"),        emoji: "✦", file: "pages/ModelsPage.qml" },
+        { label: qsTr("Dashboard"),     emoji: "📊", file: "pages/DashboardPage.qml" },
+        { label: qsTr("Shortcuts"),     emoji: "⌨️", file: "pages/ShortcutsPage.qml" },
+        { label: qsTr("Models"),        emoji: "🧠", file: "pages/ModelsPage.qml" },
         { label: qsTr("Language"),      emoji: "🌐", file: "pages/LanguagePage.qml" },
-        { label: qsTr("Output"),        emoji: "↪", file: "pages/OutputPage.qml" },
+        { label: qsTr("Output"),        emoji: "📤", file: "pages/OutputPage.qml" },
         { label: qsTr("Cleanup"),       emoji: "✨", file: "pages/CleanupPage.qml" },
         { label: qsTr("Profile"),       emoji: "👤", file: "pages/ProfilePage.qml" },
-        { label: qsTr("Backend"),       emoji: "⚙", file: "pages/BackendPage.qml" },
-        { label: qsTr("Overlay"),       emoji: "◐", file: "pages/OverlayAppearancePage.qml" },
+        { label: qsTr("Backend"),       emoji: "⚙️", file: "pages/BackendPage.qml" },
+        { label: qsTr("Overlay"),       emoji: "🪟", file: "pages/OverlayAppearancePage.qml" },
         { label: qsTr("Privacy"),       emoji: "🔒", file: "pages/PrivacyPage.qml" },
         { label: qsTr("Advanced"),      emoji: "⚡", file: "pages/AdvancedPage.qml" },
-        { label: qsTr("About"),         emoji: "ⓘ", file: "pages/AboutPage.qml" }
+        { label: qsTr("About"),         emoji: "ℹ️", file: "pages/AboutPage.qml" }
     ]
 
     Connections {
@@ -147,7 +147,7 @@ ApplicationWindow {
                             borderWidth: 1
                             Label {
                                 anchors.centerIn: parent
-                                text: Theme.mode === "dark" ? "☀" : "☾"
+                                text: Theme.mode === "dark" ? "☀️" : "🌙"
                                 color: Theme.text
                                 font.pixelSize: 15
                             }
