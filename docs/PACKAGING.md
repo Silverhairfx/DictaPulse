@@ -120,24 +120,25 @@ You'll publish two related package bases over time:
 
 ### 2.1 `dictapulse` PKGBUILD (release build)
 
-> **Verified 2026-06-08** against the **v0.1.1** tarball: `makepkg` builds clean and the
-> package contains `usr/share/applications/dictapulse.desktop` (the DESTDIR fix in
-> `eedce8c` is what makes `package()` work — v0.1.0 would fail here). The exact PKGBUILD +
-> `.SRCINFO` that were tested live in `/tmp/aur-dictapulse/` from that session.
+> **Verified 2026-06-08** against the **v0.1.1** tarball in a fully offline `build()`:
+> `makepkg` succeeds and the package contains `usr/share/applications/dictapulse.desktop`
+> (the DESTDIR `.desktop` fix is what makes `package()` work — pre-fix it would write to the
+> real `/usr` and fail). The canonical, tested PKGBUILD + `.SRCINFO` live in the repo at
+> **`packaging/aur/dictapulse/`** — the block below mirrors them.
 
-> One wrinkle: the build **fetches whisper.cpp via CMake FetchContent**
-> (`CMakeLists.txt`), so `build()` needs network access. That's fine for a normal
-> `makepkg`, but breaks a `--nonetwork` clean-chroot build. Two options:
-> **(a)** accept the network fetch (shown below, simplest); or
-> **(b)** add whisper.cpp `v1.7.6` as a real `source=()` entry and point
-> `-DFETCHCONTENT_SOURCE_DIR_WHISPER_CPP=` at the extracted dir for a fully
-> reproducible, offline build (preferred for AUR hygiene — do this when you have time).
+> **Clean-chroot safe.** whisper.cpp is normally pulled by CMake FetchContent during
+> `build()`, which needs network and **breaks `--nonetwork` clean-chroot builds**. This
+> PKGBUILD instead **vendors whisper.cpp `v1.7.6` as a real `source=()`** and points
+> `-DFETCHCONTENT_SOURCE_DIR_WHISPER_CPP` at the unpacked tree with
+> `-DFETCHCONTENT_FULLY_DISCONNECTED=ON`, so the compile never touches the network. On a
+> future version bump, keep `_whisperver` in sync with the `GIT_TAG` in `CMakeLists.txt`.
 
 ```bash
 # Maintainer: Tymour Kadry <tymitaly@gmail.com>
 pkgname=dictapulse
 pkgver=0.1.1
-pkgrel=1
+pkgrel=2
+_whisperver=1.7.6
 pkgdesc="Local AI voice dictation for KDE Plasma (Wayland)"
 arch=('x86_64')
 url="https://github.com/Silverhairfx/DictaPulse"
@@ -155,15 +156,21 @@ optdepends=(
 )
 makedepends=(cmake extra-cmake-modules git
              vulkan-headers vulkan-icd-loader shaderc)  # shaderc = glslc, for Vulkan shaders
-source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('c2745aaf50b330a231c53a2d03da44f5aea44da96818c6e8403be296e68658a3')  # v0.1.1 tarball
+source=(
+  "$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz"
+  "whisper.cpp-$_whisperver.tar.gz::https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v$_whisperver.tar.gz"
+)
+sha256sums=('c2745aaf50b330a231c53a2d03da44f5aea44da96818c6e8403be296e68658a3'
+            '166140e9a6d8a36f787a2bd77f8f44dd64874f12dd8359ff7c1f4f9acb86202e')
 
 build() {
   cd "DictaPulse-$pkgver"
   cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DDICTAPULSE_ENABLE_VULKAN=ON
+    -DDICTAPULSE_ENABLE_VULKAN=ON \
+    -DFETCHCONTENT_SOURCE_DIR_WHISPER_CPP="$srcdir/whisper.cpp-$_whisperver" \
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON
   cmake --build build -j"$(nproc)"
 }
 
@@ -172,6 +179,14 @@ package() {
   DESTDIR="$pkgdir" cmake --install build
 }
 ```
+
+> **namcap note:** the source package is clean apart from namcap's known Qt/KDE blind spots —
+> the embedded `DictaPulse` QML module, base libs "implicitly satisfied", and "may not be
+> needed" warnings for `qt6-wayland` / `qt6-svg` / `kconfig` / `kwindowsystem`. Those are
+> **runtime plugin deps** (e.g. the Wayland QPA plugin) that namcap can't see being linked —
+> keep them. The `dictapulse-bin` package additionally trips `ELF files outside /opt`,
+> `unstripped`, and "unused shared library" — all expected for a self-contained AppImage
+> bundle and accepted for `-bin` packages.
 
 ### 2.2 Build & test locally before publishing
 

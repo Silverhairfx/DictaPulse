@@ -81,7 +81,35 @@ The KDE Plasma 6 release is shipping first. The architecture is cleanly layered 
 
 ---
 
-## 🚀 Quick install (Arch / CachyOS)
+## 🚀 Install
+
+### Arch / CachyOS — AUR (recommended)
+
+DictaPulse is on the AUR in two flavours. Install with your favourite helper (`paru`, `yay`, …):
+
+```bash
+paru -S dictapulse-bin    # prebuilt Vulkan AppImage — no compiling, installs in seconds
+# or
+paru -S dictapulse        # builds from source against your system's Qt/KF6
+```
+
+- **`dictapulse-bin`** — fastest path; ships the prebuilt Vulkan AppImage, unpacked to `/opt`.
+- **`dictapulse`** — compiles `whisper.cpp` + the app from source (Vulkan on). Pick this if you'd rather link against your exact system libraries.
+
+They `provides`/`conflicts` each other, so install whichever suits you — not both.
+
+### Any distro — AppImage
+
+Grab the latest `DictaPulse-*-x86_64.AppImage` from the [**Releases**](https://github.com/Silverhairfx/DictaPulse/releases) page:
+
+```bash
+chmod +x DictaPulse-*-x86_64.AppImage
+./DictaPulse-*-x86_64.AppImage
+```
+
+Runs unsandboxed on the host (so global shortcuts + injection work). Requires **KDE Plasma 6 (Wayland)**, a running **`ydotoold`**, and host **ffmpeg** (present on most desktops). The Vulkan loader is bundled; a GPU driver enables acceleration, otherwise it falls back to CPU.
+
+### Build from source
 
 ```bash
 git clone https://github.com/Silverhairfx/DictaPulse.git
@@ -105,7 +133,7 @@ echo 'set -gx PATH $HOME/.local/bin $PATH' >> ~/.config/fish/config.fish
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 ```
 
-### GPU acceleration (optional, advanced)
+#### GPU acceleration (optional, advanced)
 
 ```bash
 ./scripts/install.sh --vulkan     # Cross-vendor GPU acceleration

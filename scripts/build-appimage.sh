@@ -73,7 +73,11 @@ cp -Lu /usr/lib/qt6/plugins/wayland-graphics-integration-client/libqt-plugin-way
        AppDir/usr/plugins/wayland-graphics-integration-client/
 # 4b. Do NOT bundle ffmpeg — the QtMultimedia ffmpeg backend SIGSEGVs in dlopen when
 #     mixing a partial bundled ffmpeg with the host's. Host ffmpeg .62 is self-consistent.
-( cd AppDir/usr/lib && rm -f libav*.so* libsw*.so* libpostproc*.so* )
+# NB: match ffmpeg libs PRECISELY — a bare `libav*` also catches libavif.so.16
+# (AV1 image lib used by the kimg_avif plugin), leaving a dangling plugin.
+( cd AppDir/usr/lib && rm -f \
+    libavcodec.so* libavformat.so* libavutil.so* libavdevice.so* libavfilter.so* \
+    libswscale.so* libswresample.so* libpostproc.so* )
 # 4c. Vulkan: keep the bundled vendor-neutral loader (libvulkan.so.1) so the app always
 #     launches; host ICDs (/usr/share/vulkan/icd.d) are used since we bundle no *.json.
 
