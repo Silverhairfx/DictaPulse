@@ -197,9 +197,7 @@ int main(int argc, char* argv[])
     engine.rootContext()->setContextProperty("hardwareInfo", hardware);
     engine.rootContext()->setContextProperty("secrets", secrets);
     engine.rootContext()->setContextProperty("profileStats", profileStats);
-    engine.rootContext()->setContextProperty("buildProvenance",
-                                             QString::fromLatin1(dictapulse::kProvenanceId));
-    // Origin marker in the startup log (also lives in the binary + About page).
+    // Origin marker in the startup log (also lives in the binary).
     std::fprintf(stderr, "[DictaPulse] %s\n", dictapulse::kProvenanceId);
     std::fflush(stderr);
     // Dev helper: DICTAPULSE_PAGE=<index> opens the window on a specific page

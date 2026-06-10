@@ -28,15 +28,6 @@ ScrollView {
             }
             Label {
                 color: Theme.textDim
-                Layout.fillWidth: true
-                font.pixelSize: 9
-                font.family: "monospace"
-                elide: Label.ElideRight
-                opacity: 0.5
-                text: buildProvenance
-            }
-            Label {
-                color: Theme.textDim
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
                 font.pixelSize: 12
