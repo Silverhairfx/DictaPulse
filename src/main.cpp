@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName("DictaPulse");
-    QCoreApplication::setOrganizationDomain("dictapulse.app");
+    QCoreApplication::setOrganizationDomain("dictapulse.com");
     QCoreApplication::setApplicationName("DictaPulse");
     QCoreApplication::setApplicationVersion(QStringLiteral("0.1.0"));
     QApplication::setQuitOnLastWindowClosed(false);

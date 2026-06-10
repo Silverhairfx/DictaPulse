@@ -45,6 +45,11 @@ ScrollView {
             Label {
                 color: Theme.textDim
                 font.pixelSize: 12
+                text: qsTr("Website: https://dictapulse.com")
+            }
+            Label {
+                color: Theme.textDim
+                font.pixelSize: 12
                 text: qsTr("Repository: https://github.com/Silverhairfx/DictaPulse")
             }
         }

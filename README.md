@@ -6,6 +6,7 @@
 
 ### Local AI voice dictation for KDE Plasma — speak anywhere, get polished text.
 
+[![Website](https://img.shields.io/badge/website-dictapulse.com-7c5cff?style=flat-square)](https://dictapulse.com)
 [![License](https://img.shields.io/badge/license-GPL--3.0-7c5cff?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-KDE%20Plasma%206-3aa0ff?style=flat-square&logo=kde&logoColor=white)](https://kde.org)
 [![Qt](https://img.shields.io/badge/Qt-6.9%2B-41cd52?style=flat-square&logo=qt&logoColor=white)](https://www.qt.io)
@@ -15,6 +16,8 @@
 
 **Press a shortcut → speak → text appears in the app you're using.**
 Fully offline. Built on Qt 6 Quick/QML, KDE Frameworks 6, and `whisper.cpp`.
+
+**[dictapulse.com](https://dictapulse.com)**
 
 <br/>
 
