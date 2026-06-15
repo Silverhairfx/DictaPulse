@@ -126,4 +126,4 @@ I may ask for changes, ask you to split a large pull request, or close work that
 
 Use the issue forms for bugs, feature requests, and packaging reports. Please include enough system detail for someone else to reproduce the behavior.
 
-Security vulnerabilities should not be reported in public issues. See [SECURITY.md](SECURITY.md).
+Security vulnerabilities should not be reported in public issues. See [.github/SECURITY.md](.github/SECURITY.md).
