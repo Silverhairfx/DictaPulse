@@ -1,0 +1,81 @@
+name: Feature request
+description: Suggest a focused improvement for DictaPulse.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement. Broad roadmap ideas can also go in GitHub Discussions.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem would this solve?
+      placeholder: I often dictate into terminals, but direct insertion is unreliable there.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you want.
+      placeholder: Add a per-app rule that always uses copy and paste for terminal windows.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What have you tried or considered instead?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Dictation workflow
+        - Text insertion
+        - Overlay
+        - Shortcuts
+        - Models
+        - Transcript cleanup
+        - Profile
+        - Privacy
+        - Packaging
+        - Platform support
+        - UI or design
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Target platform
+      options:
+        - KDE Plasma 6 Wayland
+        - KDE Plasma 6 X11
+        - GNOME
+        - Windows
+        - macOS
+        - Android
+        - iOS
+        - Cross-platform
+        - Other
+
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy or security impact
+      description: Would this feature touch audio, transcripts, clipboard contents, API keys, model downloads, or remote providers?
+      placeholder: This would use clipboard contents temporarily but should not write transcripts to disk.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add mockups, examples, links, or screenshots if helpful.

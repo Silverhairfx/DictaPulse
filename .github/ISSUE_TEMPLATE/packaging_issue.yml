@@ -1,0 +1,79 @@
+name: Packaging or install issue
+description: Report problems with AUR packages, AppImage, install scripts, or release artifacts.
+title: "[Packaging]: "
+labels: ["packaging", "needs-triage"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What failed?
+      placeholder: The AppImage launches, but text injection fails on KDE Plasma Wayland.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package or install path
+      options:
+        - AUR dictapulse-bin
+        - AUR dictapulse
+        - AppImage
+        - scripts/install.sh
+        - Manual CMake build
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: DictaPulse version
+      placeholder: 0.1.1, AppImage filename, AUR package version, or git commit
+    validations:
+      required: true
+
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution
+      placeholder: Arch Linux, CachyOS, EndeavourOS, etc.
+    validations:
+      required: true
+
+  - type: input
+    id: plasma
+    attributes:
+      label: KDE Plasma version
+      placeholder: Output of plasmashell --version
+
+  - type: dropdown
+    id: display_server
+    attributes:
+      label: Display server
+      options:
+        - Wayland
+        - X11
+        - Unsure
+
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands run
+      description: Paste the commands you ran.
+      render: shell
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Build, install, or launch output
+      description: Paste relevant output. Remove API keys, tokens, private transcripts, and personal data.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Include `makepkg`, `namcap`, AppImage, or dependency details if relevant.
+

@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ideas and general discussion
+    url: https://github.com/Silverhairfx/DictaPulse/discussions
+    about: Share broad ideas, roadmap suggestions, or open-ended questions.
+  - name: Security vulnerability
+    url: https://github.com/Silverhairfx/DictaPulse/security/policy
+    about: Please do not report security vulnerabilities in public issues.
+

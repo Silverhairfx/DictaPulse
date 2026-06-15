@@ -1,0 +1,150 @@
+name: Bug report
+description: Report a reproducible problem with DictaPulse.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please remove private transcripts, API keys, tokens, recordings, and personal data before submitting.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+      placeholder: DictaPulse starts listening, but no text is inserted into the focused app.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps needed to trigger the bug.
+      placeholder: |
+        1. Launch DictaPulse.
+        2. Select the Base multilingual model.
+        3. Press Ctrl+Alt+Space in Kate.
+        4. Speak a short sentence.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: The transcript should be inserted into the focused text field.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: The overlay disappears, but no text is inserted.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: DictaPulse version
+      placeholder: 0.1.1, AppImage filename, AUR package version, or git commit
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Install method
+      options:
+        - AUR dictapulse-bin
+        - AUR dictapulse
+        - AppImage
+        - Built from source
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: distro
+    attributes:
+      label: Linux distribution
+      placeholder: Arch Linux, CachyOS, EndeavourOS, Fedora KDE, etc.
+    validations:
+      required: true
+
+  - type: input
+    id: plasma
+    attributes:
+      label: KDE Plasma version
+      placeholder: Output of plasmashell --version
+    validations:
+      required: true
+
+  - type: input
+    id: qt
+    attributes:
+      label: Qt version
+      placeholder: 6.9.0, 6.9.1, etc.
+
+  - type: dropdown
+    id: display_server
+    attributes:
+      label: Display server
+      options:
+        - Wayland
+        - X11
+        - Unsure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: output_mode
+    attributes:
+      label: Output mode
+      options:
+        - Direct insertion
+        - Clipboard
+        - Copy and paste
+        - Unsure
+    validations:
+      required: true
+
+  - type: input
+    id: target_app
+    attributes:
+      label: Target app
+      description: The app or text field where DictaPulse tried to insert text.
+      placeholder: Kate, Konsole, Firefox, VS Code, Slack, etc.
+
+  - type: input
+    id: model
+    attributes:
+      label: Whisper model
+      placeholder: base, base.en, small, large-v3-turbo, etc.
+
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend mode
+      options:
+        - CPU
+        - GPU
+        - Hybrid
+        - Unsure
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or terminal output
+      description: Paste relevant output only. Remove transcripts, API keys, tokens, and personal data.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add screenshots, short recordings, hardware details, or related issues if useful.
+
