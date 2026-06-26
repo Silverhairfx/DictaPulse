@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(DictaPulse
-    VERSION 0.1.1
+    VERSION 0.2.0
     DESCRIPTION "Local AI voice dictation for KDE Plasma"
     HOMEPAGE_URL "https://dictapulse.com"
     LANGUAGES C CXX
@@ -22,9 +22,21 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ---- Options ----
-option(DICTAPULSE_ENABLE_VULKAN "Build whisper.cpp with Vulkan acceleration" OFF)
 option(DICTAPULSE_ENABLE_CUDA   "Build whisper.cpp with CUDA acceleration"   OFF)
 option(DICTAPULSE_ENABLE_HIP    "Build whisper.cpp with ROCm/HIP acceleration" OFF)
+
+# On Linux default Vulkan on when the loader is present, so a plain rebuild
+# doesn't silently drop to a CPU-only build. WhisperEngine still probes the
+# device at load time and falls back to CPU. Explicit -D always wins.
+set(_dp_vulkan_default OFF)
+if(UNIX AND NOT APPLE AND NOT DICTAPULSE_ENABLE_CUDA AND NOT DICTAPULSE_ENABLE_HIP)
+    find_package(Vulkan QUIET)
+    if(Vulkan_FOUND)
+        set(_dp_vulkan_default ON)
+        message(STATUS "DictaPulse: Vulkan loader found, enabling GPU acceleration by default")
+    endif()
+endif()
+option(DICTAPULSE_ENABLE_VULKAN "Build whisper.cpp with Vulkan acceleration" ${_dp_vulkan_default})
 
 # ---- Qt 6 ----
 # 6.9+ for RectangularShadow (QtQuick.Effects), used by the clay design system.

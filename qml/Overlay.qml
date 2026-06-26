@@ -11,21 +11,17 @@ Window {
     id: overlayWin
     objectName: "overlayWin"
 
-    // Distinct title so a KWin window rule (written by main.cpp) can target ONLY
-    // this window and force bottom-center + keep-above placement.
+    // Distinct title so the KWin rule (written by main.cpp) targets only this
+    // window for bottom-center + keep-above placement.
     title: "DictaPulse Listening Overlay"
 
-    // Declared inside the main ApplicationWindow, this would default to being a
-    // transient child — which on Wayland won't map while the parent is hidden
-    // (e.g. when startMinimized hides the settings window). Detach it so the
-    // overlay is an independent top-level that maps regardless of the main window.
+    // Detach from the main window: a transient child won't map on Wayland while
+    // the parent is hidden (e.g. startMinimized). Top-level maps regardless.
     transientParent: null
 
-    // WindowTransparentForInput is load-bearing: the window stays mapped at all
-    // times (Qt-on-Wayland fails to *re-map* a QQuickWindow after it's been
-    // hidden once — the second show() never reappears). Keeping it permanently
-    // mapped sidesteps that bug; input-transparency means it never steals focus
-    // and clicks pass straight through to whatever is underneath.
+    // Stays permanently mapped: Qt-on-Wayland can't re-map a QQuickWindow after
+    // it's been hidden once, so the second show() never reappears. Input-transparent
+    // so it never steals focus and clicks pass through to whatever's underneath.
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowTransparentForInput
     color: "transparent"
 
@@ -34,16 +30,15 @@ Window {
     width: Math.round(baseWidth * appSettings.overlayScale)
     height: Math.round(baseHeight * appSettings.overlayScale)
 
-    // Mapped whenever the overlay feature is on; visual presence is driven by
-    // the pill's opacity below, NOT by mapping/unmapping the window.
+    // Mapped whenever the feature is on; presence is driven by the pill's opacity,
+    // not by mapping/unmapping the window.
     visible: appSettings.overlayEnabled
     opacity: appSettings.overlayOpacity
 
     readonly property bool active: controller.state === "listening"
                                  || controller.state === "processing"
 
-    // Kept for Main.qml compatibility; the pop sounds fire here, but show/hide
-    // is now purely the opacity animation reacting to controller.state.
+    // Kept for Main.qml compat; show/hide is now just the opacity animation.
     function showOverlay() { raise() }
     function hideOverlay() {}
 
@@ -58,12 +53,24 @@ Window {
         volume: 0.9
     }
 
-    // Play the pops as the overlay becomes/stops being active, so they signal
-    // "now listening" / "stopped" — useful as a non-visual cue (accessibility).
+    // A suspended audio sink takes ~300ms to resume, so the first cue is dropped
+    // mid-spin-up (why the start pop was unheard but the warm-sink end pop played).
+    // Hold the sink awake with a real silent sample, then fire the cue once it's up.
+    SoundEffect {
+        id: sinkWarmup
+        source: "qrc:/qt/qml/DictaPulse/sounds/silence.wav"
+        volume: 1.0
+    }
+    Timer { id: startCueTimer; interval: 380; onTriggered: popIn.play() }
+    Timer { id: endCueTimer; interval: 380; onTriggered: popOut.play() }
+
+    // Pops signal listening/stopped as a non-visual cue. The sink can re-suspend
+    // during a long recording, so warm it on both transitions, not just the start.
     onActiveChanged: {
         if (!appSettings.overlaySounds) return
-        if (active) popIn.play()
-        else        popOut.play()
+        sinkWarmup.play()
+        if (active) startCueTimer.restart()
+        else        endCueTimer.restart()
     }
 
     Rectangle {
@@ -74,13 +81,13 @@ Window {
         border.width: 1
         border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.45)
 
-        // Fade the content in/out instead of mapping the window.
+        // Fade content instead of mapping the window.
         opacity: overlayWin.active ? 1.0 : 0.0
         Behavior on opacity { NumberAnimation { duration: 160 } }
 
         readonly property real scale: appSettings.overlayScale
 
-        // Clay sheen: faint light along the top of the capsule.
+        // Clay sheen along the top edge.
         Rectangle {
             anchors.fill: parent
             anchors.margins: 1
@@ -98,7 +105,7 @@ Window {
             anchors.rightMargin: Math.round(14 * pill.scale)
             spacing: Math.round(8 * pill.scale)
 
-            // Record button: solid red dot, pulses while listening.
+            // Red dot, pulses while listening.
             Rectangle {
                 Layout.preferredWidth: Math.round(12 * pill.scale)
                 Layout.preferredHeight: Math.round(12 * pill.scale)
@@ -112,8 +119,7 @@ Window {
                 }
             }
 
-            // White waveform, no text label. Minimal vertical margin so the
-            // bars can vibrate nearly the full pill height.
+            // Waveform; thin margins so bars span nearly the full pill height.
             Waveform {
                 visible: appSettings.overlayWaveform
                 Layout.fillWidth: true

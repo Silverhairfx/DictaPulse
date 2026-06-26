@@ -29,12 +29,74 @@ ScrollView {
         { value: "custom",    name: qsTr("Custom (OpenAI-compatible)"), model: "" }
     ]
 
-    // Key-presence is a method, not a property; mirror it into a property and
-    // refresh on the secrets store's changed() signal.
+    // Key-presence is a method; mirror it into a property, refresh on secrets changed().
     property bool keyPresent: false
     function refreshKey() { keyPresent = secrets.hasKey(appSettings.cleanupRemoteProvider) }
-    Component.onCompleted: refreshKey()
+    Component.onCompleted: { refreshKey(); refreshLocalModels() }
     Connections { target: secrets; function onChanged(id) { pageRoot.refreshKey() } }
+
+    // Downloaded models pulled live from the local server, so a headless/daemon
+    // user picks one here without opening the LM Studio / Ollama GUI.
+    property var localModelOpts: []
+    property bool localModelsFetched: false
+    property bool localModelsBusy: false
+
+    // Real models plus a trailing "Download a model" sentinel (the only entry when none exist).
+    readonly property var localComboModel: {
+        var base = localModelOpts.slice()
+        base.push({
+            name: (localModelsFetched && localModelOpts.length === 0)
+                  ? qsTr("No models found — Download a model…")
+                  : qsTr("Download a model…"),
+            value: "__download__"
+        })
+        return base
+    }
+
+    function refreshLocalModels() {
+        var ep = (appSettings.cleanupLocalEndpoint || "").trim()
+        localModelsFetched = false
+        localModelsBusy = true
+        if (ep === "") { localModelOpts = []; localModelsFetched = true; localModelsBusy = false; return }
+        var url = ep.replace(/\/+$/, "") + "/models"
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== XMLHttpRequest.DONE) return
+            var opts = []
+            if (xhr.status === 200) {
+                try {
+                    var arr = (JSON.parse(xhr.responseText).data) || []
+                    for (var i = 0; i < arr.length; i++) {
+                        var id = arr[i].id || arr[i].name
+                        if (!id) continue
+                        var low = ("" + id).toLowerCase()
+                        // Skip non-chat models (embeddings, the bundled whisper STT).
+                        if (low.indexOf("embed") >= 0 || low.indexOf("whisper") >= 0) continue
+                        opts.push({ name: id, value: id })
+                    }
+                } catch (e) {}
+            }
+            localModelOpts = opts
+            localModelsFetched = true
+            localModelsBusy = false
+        }
+        xhr.open("GET", url)
+        xhr.send()
+    }
+
+    // Point the combo at the saved model. Default to the first real model when the
+    // saved one is gone (or never set) so cleanup always has a valid target.
+    function syncModelSelection() {
+        var i = modelCombo.indexOfValue(appSettings.cleanupLocalModel)
+        if (i >= 0) { modelCombo.currentIndex = i; return }
+        if (localModelOpts.length > 0) {
+            appSettings.cleanupLocalModel = localModelOpts[0].value
+            modelCombo.currentIndex = 0
+        } else {
+            modelCombo.currentIndex = modelCombo.count - 1
+        }
+    }
+    onLocalComboModelChanged: syncModelSelection()
 
     ColumnLayout {
         width: pageRoot.width
@@ -89,6 +151,7 @@ ScrollView {
                             appSettings.cleanupLocalPreset = currentValue
                             const ep = pageRoot.localPresets[currentIndex].endpoint
                             if (ep !== "") appSettings.cleanupLocalEndpoint = ep
+                            pageRoot.refreshLocalModels()
                         }
                     }
                     ClayButton {
@@ -104,17 +167,38 @@ ScrollView {
                 ClayTextField {
                     Layout.preferredWidth: 280
                     text: appSettings.cleanupLocalEndpoint
-                    onEditingFinished: appSettings.cleanupLocalEndpoint = text
+                    onEditingFinished: {
+                        appSettings.cleanupLocalEndpoint = text
+                        pageRoot.refreshLocalModels()
+                    }
                 }
             }
             SettingRow {
                 label: qsTr("Model")
-                hint: qsTr("Leave blank to use whatever model is loaded (LM Studio)")
-                ClayTextField {
-                    Layout.preferredWidth: 280
-                    placeholderText: qsTr("e.g. llama-3.1-8b-instruct")
-                    text: appSettings.cleanupLocalModel
-                    onEditingFinished: appSettings.cleanupLocalModel = text
+                hint: qsTr("Picked automatically loads on use, no need to load it yourself")
+                RowLayout {
+                    spacing: Theme.padSm
+                    ClayComboBox {
+                        id: modelCombo
+                        Layout.preferredWidth: 280
+                        textRole: "name"
+                        valueRole: "value"
+                        model: pageRoot.localComboModel
+                        onActivated: {
+                            if (currentValue === "__download__") {
+                                downloadHelp.open()
+                                pageRoot.syncModelSelection()
+                            } else {
+                                appSettings.cleanupLocalModel = currentValue
+                            }
+                        }
+                    }
+                    ClayButton {
+                        text: pageRoot.localModelsBusy ? qsTr("…") : qsTr("Refresh")
+                        variant: "ghost"
+                        enabled: !pageRoot.localModelsBusy
+                        onClicked: pageRoot.refreshLocalModels()
+                    }
                 }
             }
         }
@@ -232,7 +316,22 @@ ScrollView {
         contentItem: Label {
             wrapMode: Text.WordWrap
             color: Theme.text
-            text: qsTr("LM Studio:\n1. Install LM Studio and download a chat model (e.g. Llama 3.1 8B Instruct).\n2. Open the ‘Developer’ tab → Start Server. It listens on http://localhost:1234.\n3. Leave Model blank to use the loaded model.\n\nOllama:\n1. Install Ollama, then run:  ollama pull llama3.1\n2. Ollama serves an OpenAI-compatible API on http://localhost:11434/v1.\n3. Set Model to the pulled name, e.g. llama3.1.")
+            text: qsTr("LM Studio:\n1. Install LM Studio and download a chat model (e.g. Llama 3.1 8B Instruct).\n2. Open the ‘Developer’ tab → Start Server. It listens on http://localhost:1234.\n3. Pick the model from the Model dropdown above.\n\nOllama:\n1. Install Ollama, then run:  ollama pull llama3.1\n2. Ollama serves an OpenAI-compatible API on http://localhost:11434/v1.\n3. Pick the pulled model from the Model dropdown above.")
+        }
+    }
+
+    ClayDialog {
+        id: downloadHelp
+        anchors.centerIn: Controls.Overlay.overlay
+        title: qsTr("Add a model")
+        standardButtons: Dialog.Ok
+        width: 480
+        contentItem: Label {
+            wrapMode: Text.WordWrap
+            color: Theme.text
+            text: appSettings.cleanupLocalPreset === "ollama"
+                ? qsTr("Ollama\n\nGUI: open Ollama and pull a model.\nTerminal / daemon:  ollama pull llama3.1\n\nThen press Refresh here and pick it from the list. DictaPulse loads the model for you on each cleanup, so there's nothing else to start.")
+                : qsTr("LM Studio\n\nApp: open the Search tab, find a chat model (e.g. Llama 3.1 8B Instruct), and Download.\nDaemon / no GUI:  lms get llama-3.1-8b-instruct\n\nThen press Refresh here and pick it from the list. DictaPulse loads the model for you on each cleanup. Models are read from the running server, so a custom download folder works automatically.")
         }
     }
 

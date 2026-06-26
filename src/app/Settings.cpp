@@ -148,7 +148,8 @@ DICTAPULSE_SETTING_STR(backendMode, setBackendMode, kBackendMode, "gpu", backend
 DICTAPULSE_SETTING_STR(backendApi, setBackendApi, kBackendApi, "vulkan", backendApiChanged)
 DICTAPULSE_SETTING_INT(cpuThreads, setCpuThreads, kCpuThreads, qMax(1, QThread::idealThreadCount() / 2), cpuThreadsChanged)
 DICTAPULSE_SETTING_INT(silenceMs, setSilenceMs, kSilenceMs, 1200, silenceMsChanged)
-DICTAPULSE_SETTING_INT(maxRecordingSeconds, setMaxRecordingSeconds, kMaxSeconds, 60, maxRecordingSecondsChanged)
+// 0 = no limit: record until the user stops. A cap is opt-in (a safety stop).
+DICTAPULSE_SETTING_INT(maxRecordingSeconds, setMaxRecordingSeconds, kMaxSeconds, 0, maxRecordingSecondsChanged)
 DICTAPULSE_SETTING_DBL(vadThreshold, setVadThreshold, kVadThreshold, 0.005, vadThresholdChanged)
 DICTAPULSE_SETTING_BOOL(autoGainEnabled, setAutoGainEnabled, kAutoGain, true, autoGainEnabledChanged)
 DICTAPULSE_SETTING_DBL(inputGain, setInputGain, kInputGain, 1.0, inputGainChanged)

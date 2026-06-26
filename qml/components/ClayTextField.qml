@@ -4,14 +4,17 @@ import QtQuick
 import QtQuick.Controls
 import DictaPulse
 
-// Clay text input: a well molded INTO the canvas; the rim lights up indigo
-// on focus.
+// Clay text input: a well in the canvas; rim lights up on focus.
 TextField {
     id: control
 
     implicitHeight: 36
     leftPadding: 12
     rightPadding: 12
+    // The font seats glyphs high in the line box, so plain AlignVCenter looks
+    // lifted. Extra top padding drops the text to the optical centre.
+    topPadding: 11
+    bottomPadding: 5
     color: Theme.text
     placeholderTextColor: Theme.textDim
     selectionColor: Theme.accent

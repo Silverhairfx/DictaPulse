@@ -26,7 +26,7 @@ here is meant to be run **by a human** — nothing in this repo runs it automati
 | AppImage (Vulkan) | ✅ works | "Download & run" binary, attached to the release (§3) |
 | Flatpak / Flathub | ⛔ deferred | Needs an injection rewrite around XDG portals (§4) |
 
-Current version is `0.1.0` (set in `CMakeLists.txt:project(... VERSION 0.1.0)`).
+Current version is `0.2.0` (set in `CMakeLists.txt:project(... VERSION 0.2.0)`).
 Bump that line first whenever you cut a new version.
 
 ---

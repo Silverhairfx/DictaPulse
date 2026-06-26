@@ -55,6 +55,9 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/sounds/pop-in.wav"
 set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/sounds/pop-out.wav"
     PROPERTIES QT_RESOURCE_ALIAS sounds/pop-out.wav
 )
+set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/sounds/silence.wav"
+    PROPERTIES QT_RESOURCE_ALIAS sounds/silence.wav
+)
 
 set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/fonts/DMSerifDisplay-Regular.ttf"
     PROPERTIES QT_RESOURCE_ALIAS fonts/DMSerifDisplay-Regular.ttf
@@ -107,6 +110,7 @@ qt_add_qml_module(dictapulse
         ${CMAKE_SOURCE_DIR}/resources/icons/dictapulse.svg
         ${CMAKE_SOURCE_DIR}/resources/sounds/pop-in.wav
         ${CMAKE_SOURCE_DIR}/resources/sounds/pop-out.wav
+        ${CMAKE_SOURCE_DIR}/resources/sounds/silence.wav
         ${CMAKE_SOURCE_DIR}/resources/fonts/DMSerifDisplay-Regular.ttf
 )
 

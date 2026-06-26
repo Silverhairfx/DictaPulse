@@ -9,6 +9,9 @@ TextArea {
     id: control
 
     padding: 12
+    // Glyphs seat high in the line box, so the first line hugs the top border.
+    // A little extra top padding gives it even breathing room.
+    topPadding: 16
     color: Theme.text
     placeholderTextColor: Theme.textDim
     selectionColor: Theme.accent

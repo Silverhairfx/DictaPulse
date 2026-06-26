@@ -26,12 +26,24 @@ ScrollView {
                 }
             }
             SettingRow {
-                label: qsTr("Max recording length (s)")
-                ClaySpinBox {
-                    from: 5
-                    to: 600
-                    value: appSettings.maxRecordingSeconds
-                    onValueModified: appSettings.maxRecordingSeconds = value
+                label: qsTr("Max recording length")
+                hint: qsTr("Safety stop for a single dictation. Default is no limit; recording runs until you stop it. Longer clips take longer to transcribe.")
+                ClayComboBox {
+                    Layout.preferredWidth: 200
+                    textRole: "name"
+                    valueRole: "value"
+                    model: [
+                        { value: 0,    name: qsTr("No limit") },
+                        { value: 60,   name: qsTr("1 minute") },
+                        { value: 300,  name: qsTr("5 minutes") },
+                        { value: 900,  name: qsTr("15 minutes") },
+                        { value: 1800, name: qsTr("30 minutes") }
+                    ]
+                    Component.onCompleted: {
+                        const i = indexOfValue(appSettings.maxRecordingSeconds)
+                        currentIndex = i >= 0 ? i : 0
+                    }
+                    onActivated: appSettings.maxRecordingSeconds = currentValue
                 }
             }
             SettingRow {
