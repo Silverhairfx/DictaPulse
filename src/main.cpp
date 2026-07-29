@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
         QLoggingCategory::setFilterRules(QStringLiteral("*.info=true"));
     }
 
-    // Note: LayerShellQt::Shell::useLayerShell() is deprecated since Qt 6.5 —
+    // Note: LayerShellQt::Shell::useLayerShell() is deprecated since Qt 6.5 -
     // layer-shell-qt 6.6+ auto-initializes via the Wayland QPA plugin. We just
     // need to call LayerShellQt::Window::get(window) on the overlay before its
     // first show and KWin will map it as a layer-shell surface.
@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
                              platform->showTrayMessage(title, body);
                      });
 
-    // "Launch at startup" — materialize/remove an XDG autostart entry so the
+    // "Launch at startup" - materialize/remove an XDG autostart entry so the
     // toggle actually takes effect. (Previously stored but never acted on.)
     auto applyAutostart = [settings]() {
         const QString dir = QDir::homePath() + QStringLiteral("/.config/autostart");

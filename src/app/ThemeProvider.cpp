@@ -76,7 +76,7 @@ void ThemeProvider::recompute()
 // --- color tokens ----------------------------------------------------------
 // "Tactile pop" clay palette. Light: white canvas, vivid indigo, cool
 // violet neutrals. Dark: deep blue-slate scale, luminous indigo accent.
-// All surfaces are opaque — depth comes from the clay emboss, not blur.
+// All surfaces are opaque - depth comes from the clay emboss, not blur.
 
 QColor ThemeProvider::bg() const
 {

@@ -71,9 +71,9 @@ export EXTRA_PLATFORM_PLUGINS="libqwayland.so;libqoffscreen.so"   # else only xc
 mkdir -p AppDir/usr/plugins/wayland-graphics-integration-client
 cp -Lu /usr/lib/qt6/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so \
        AppDir/usr/plugins/wayland-graphics-integration-client/
-# 4b. Do NOT bundle ffmpeg — the QtMultimedia ffmpeg backend SIGSEGVs in dlopen when
+# 4b. Do NOT bundle ffmpeg - the QtMultimedia ffmpeg backend SIGSEGVs in dlopen when
 #     mixing a partial bundled ffmpeg with the host's. Host ffmpeg .62 is self-consistent.
-# NB: match ffmpeg libs PRECISELY — a bare `libav*` also catches libavif.so.16
+# NB: match ffmpeg libs PRECISELY - a bare `libav*` also catches libavif.so.16
 # (AV1 image lib used by the kimg_avif plugin), leaving a dangling plugin.
 ( cd AppDir/usr/lib && rm -f \
     libavcodec.so* libavformat.so* libavutil.so* libavdevice.so* libavfilter.so* \
@@ -81,7 +81,7 @@ cp -Lu /usr/lib/qt6/plugins/wayland-graphics-integration-client/libqt-plugin-way
 # 4c. Vulkan: keep the bundled vendor-neutral loader (libvulkan.so.1) so the app always
 #     launches; host ICDs (/usr/share/vulkan/icd.d) are used since we bundle no *.json.
 
-# --- 5. package (appimagetool ships AppDir AS-IS — no dep re-resolution) -----
+# --- 5. package (appimagetool ships AppDir AS-IS - no dep re-resolution) -----
 rm -f "DictaPulse-${VERSION}-x86_64.AppImage"
 ARCH=x86_64 "$TOOLS/appimagetool-x86_64.AppImage" AppDir "DictaPulse-${VERSION}-x86_64.AppImage"
 echo "==> built DictaPulse-${VERSION}-x86_64.AppImage"

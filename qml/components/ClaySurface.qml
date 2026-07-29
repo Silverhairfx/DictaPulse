@@ -5,12 +5,12 @@ import QtQuick.Effects
 import DictaPulse
 
 // The clay emboss engine ("tactile pop"): surfaces look molded out of the
-// canvas — a soft sheen along the top, a pillow shade along the bottom, and a
+// canvas - a soft sheen along the top, a pillow shade along the bottom, and a
 // plush drop shadow underneath. Depth tiers:
-//   "raised"  — cards & hero surfaces (clay)
-//   "sm"      — buttons, chips, small controls (clay-sm)
-//   "pressed" — inputs & active button state, molded INTO the canvas (clay-pressed)
-//   "flat"    — no depth, just the rounded surface
+//   "raised"  - cards & hero surfaces (clay)
+//   "sm"      - buttons, chips, small controls (clay-sm)
+//   "pressed" - inputs & active button state, molded INTO the canvas (clay-pressed)
+//   "flat"    - no depth, just the rounded surface
 Item {
     id: root
 
@@ -19,7 +19,7 @@ Item {
     property real radius: Theme.radius
     property color borderColor: Theme.border
     property real borderWidth: 1
-    // Scales the inner sheen/shade — lets colored buttons keep a subtler gloss.
+    // Scales the inner sheen/shade - lets colored buttons keep a subtler gloss.
     property real embossStrength: 1.0
 
     default property alias contentData: surface.data
@@ -58,7 +58,7 @@ Item {
         border.width: root.borderWidth
 
         // Inset emboss. Raised: light sheen top → pillow shade bottom.
-        // Pressed: inverted — shade pools at the top, faint light at the lip.
+        // Pressed: inverted - shade pools at the top, faint light at the lip.
         Rectangle {
             anchors.fill: parent
             anchors.margins: root.borderWidth

@@ -49,7 +49,7 @@ done
 say "Configuring → ${BUILD_DIR}"
 cmake "${CMAKE_FLAGS[@]}"
 
-say "Building (this fetches and compiles whisper.cpp on first run — grab a coffee)"
+say "Building (this fetches and compiles whisper.cpp on first run - grab a coffee)"
 cmake --build "${BUILD_DIR}" -j "$(nproc)"
 
 say "Installing into ${PREFIX}"

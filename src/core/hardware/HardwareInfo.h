@@ -8,7 +8,7 @@
 
 namespace dictapulse {
 
-/// Best-effort runtime hardware detection — returns a struct of human-readable
+/// Best-effort runtime hardware detection - returns a struct of human-readable
 /// strings plus booleans for available acceleration APIs.
 class HardwareInfo : public QObject {
     Q_OBJECT

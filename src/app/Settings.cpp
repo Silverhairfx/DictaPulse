@@ -30,7 +30,7 @@ constexpr auto kVadThreshold = "dictation/vadThreshold";
 constexpr auto kAutoGain = "audio/autoGain";
 constexpr auto kInputGain = "audio/inputGain";
 constexpr auto kOverlayEnabled = "overlay/enabled";
-// NOTE: avoid the literal "general/" group — QSettings reserves "General"
+// NOTE: avoid the literal "general/" group - QSettings reserves "General"
 // (case-insensitively) for ungrouped keys and round-trips it asymmetrically in
 // IniFormat (writes to [%General] but reads back the default). Use "app/".
 constexpr auto kCloseToTray = "app/closeToTray";

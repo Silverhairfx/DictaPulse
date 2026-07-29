@@ -4,7 +4,7 @@ import QtQuick
 import DictaPulse
 
 // Opaque app canvas with three large atmospheric radial washes (violet
-// top-left, blue/purple top-right, mint bottom) — painted once per resize or
+// top-left, blue/purple top-right, mint bottom) - painted once per resize or
 // theme flip, so it costs nothing per frame.
 Item {
     id: root

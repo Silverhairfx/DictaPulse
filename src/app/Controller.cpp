@@ -272,7 +272,7 @@ void Controller::startDictation()
     if (!ensureModelLoaded()) return;
 
     m_dictationActive = true;
-    // Capture focus context now, while the target window still holds focus —
+    // Capture focus context now, while the target window still holds focus -
     // per-app rules and usage stats both key off the app-id, which our overlay
     // must not perturb later.
     m_dictationApp = m_platform ? m_platform->activeWindowId() : QString();
@@ -297,7 +297,7 @@ void Controller::cancelDictation()
     }
     m_dictationActive = false;
     m_capture->stop();
-    // Discard buffered samples — gain doesn't matter for a throwaway.
+    // Discard buffered samples - gain doesn't matter for a throwaway.
     (void)m_capture->takeFloatSamples(-1, false, 1.0);
     setState("idle", tr("Cancelled"));
     emit overlayRequested(false);
@@ -403,11 +403,11 @@ void Controller::runTranscription()
                                                 : r.detectedLanguage);
                 emit lastTranscriptChanged();
                 if (peakRms < 0.003) {
-                    setState("idle", tr("No audio (%1) — check mic input").arg(diag));
+                    setState("idle", tr("No audio (%1) - check mic input").arg(diag));
                     emit notify(tr("DictaPulse"),
                                 tr("Microphone seems silent. Verify your default input in KDE System Settings → Audio → Recording."));
                 } else {
-                    setState("idle", tr("Whisper returned nothing (%1) — try a longer phrase or a bigger model").arg(diag));
+                    setState("idle", tr("Whisper returned nothing (%1) - try a longer phrase or a bigger model").arg(diag));
                     emit notify(tr("DictaPulse"),
                                 tr("Captured audio (peak %1) but Whisper produced no text. Speak for ≥2s, or try the Base/Small model.")
                                     .arg(peakRms, 0, 'f', 3));
@@ -454,11 +454,11 @@ void Controller::runTranscription()
                         [this, raw, cleanupLang, mode, fallback, opts](const QString& err) {
                             disconnect(m_cleanup, nullptr, this, nullptr);
                             std::fprintf(stderr,
-                                         "[DictaPulse] cleanup failed: %s — falling back to rules\n",
+                                         "[DictaPulse] cleanup failed: %s - falling back to rules\n",
                                          qUtf8Printable(err));
                             std::fflush(stderr);
                             emit notify(tr("DictaPulse"),
-                                        tr("Cleanup failed (%1) — inserted lightly-cleaned text").arg(err));
+                                        tr("Cleanup failed (%1) - inserted lightly-cleaned text").arg(err));
                             finalizeInjection(m_text->process(raw, cleanupLang, opts), mode, fallback);
                         });
                 m_cleanup->process(raw, cleanupLang, cfg);
@@ -510,7 +510,7 @@ void Controller::finalizeInjection(const QString& text, const QString& mode, boo
         break;
     case PlatformAdapter::InjectResult::Failed:
         detail = tr("Insertion failed");
-        emit notify(tr("DictaPulse"), tr("Could not insert text — copied to clipboard"));
+        emit notify(tr("DictaPulse"), tr("Could not insert text - copied to clipboard"));
         break;
     }
     setState("idle", detail);

@@ -13,10 +13,10 @@ ScrollView {
     readonly property string provider: appSettings.cleanupProvider
 
     property var providerOpts: [
-        { value: "none",   name: qsTr("None — insert raw transcript") },
-        { value: "rules",  name: qsTr("Rules — offline, instant") },
-        { value: "local",  name: qsTr("Local LLM — Ollama / LM Studio") },
-        { value: "remote", name: qsTr("Remote API — Anthropic / OpenAI") }
+        { value: "none",   name: qsTr("None - insert raw transcript") },
+        { value: "rules",  name: qsTr("Rules - offline, instant") },
+        { value: "local",  name: qsTr("Local LLM - Ollama / LM Studio") },
+        { value: "remote", name: qsTr("Remote API - Anthropic / OpenAI") }
     ]
     property var localPresets: [
         { value: "lmstudio", name: "LM Studio",  endpoint: "http://localhost:1234/v1" },
@@ -46,7 +46,7 @@ ScrollView {
         var base = localModelOpts.slice()
         base.push({
             name: (localModelsFetched && localModelOpts.length === 0)
-                  ? qsTr("No models found — Download a model…")
+                  ? qsTr("No models found - Download a model…")
                   : qsTr("Download a model…"),
             value: "__download__"
         })
@@ -125,14 +125,14 @@ ScrollView {
         SectionCard {
             visible: pageRoot.provider === "rules"
             title: qsTr("Rules engine")
-            subtitle: qsTr("Offline punctuation and spacing cleanup, including an Arabic punctuation layer (؟ ، ؛). The fine-grained toggles — capitalize sentences, remove fillers, trailing space — live on the Output page.")
+            subtitle: qsTr("Offline punctuation and spacing cleanup, including an Arabic punctuation layer (؟ ، ؛). The fine-grained toggles - capitalize sentences, remove fillers, trailing space - live on the Output page.")
         }
 
         // --- Local LLM ---
         SectionCard {
             visible: pageRoot.provider === "local"
             title: qsTr("Local LLM endpoint")
-            subtitle: qsTr("Point at any OpenAI-compatible server running on your machine. Private — nothing leaves your computer.")
+            subtitle: qsTr("Point at any OpenAI-compatible server running on your machine. Private - nothing leaves your computer.")
 
             SettingRow {
                 label: qsTr("App")
@@ -344,7 +344,7 @@ ScrollView {
         contentItem: Label {
             wrapMode: Text.WordWrap
             color: Theme.text
-            text: qsTr("Anthropic (Claude):\nconsole.anthropic.com → API Keys → Create Key. Fast/cheap model: claude-haiku-4-5.\n\nOpenAI (GPT):\nplatform.openai.com → API keys → Create new secret key. Fast/cheap model: gpt-4o-mini.\n\nPaste the key above and press Save — it's stored in your system keyring, never in DictaPulse's config file.")
+            text: qsTr("Anthropic (Claude):\nconsole.anthropic.com → API Keys → Create Key. Fast/cheap model: claude-haiku-4-5.\n\nOpenAI (GPT):\nplatform.openai.com → API keys → Create new secret key. Fast/cheap model: gpt-4o-mini.\n\nPaste the key above and press Save - it's stored in your system keyring, never in DictaPulse's config file.")
         }
     }
 }

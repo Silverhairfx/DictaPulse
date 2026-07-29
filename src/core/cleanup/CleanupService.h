@@ -14,7 +14,7 @@ namespace dictapulse {
 // OpenAI-compatible endpoint like Ollama / LM Studio; "remote" = Anthropic /
 // OpenAI / custom). The trivial providers ("none" / "rules") are handled by the
 // caller (Controller + TextProcessor), not here. One request in flight at a
-// time — dictation is sequential.
+// time - dictation is sequential.
 class CleanupService : public QObject {
     Q_OBJECT
 public:

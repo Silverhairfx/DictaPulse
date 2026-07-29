@@ -69,7 +69,7 @@ public:
     Q_INVOKABLE QString modifierLabel(int modifiers) const;
     Q_INVOKABLE void showSettingsWindow();
     Q_INVOKABLE void quitApp();
-    /// The window class/app-id of the currently focused window — used by the
+    /// The window class/app-id of the currently focused window - used by the
     /// per-app rules page to show "Detected: <app>" and help authoring rules.
     Q_INVOKABLE QString activeWindowId() const;
 

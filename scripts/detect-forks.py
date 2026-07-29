@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 """
-detect-forks.py — scan public GitHub for copies of DictaPulse, including
+detect-forks.py - scan public GitHub for copies of DictaPulse, including
 rebranded ones that tried to strip the branding.
 
 DictaPulse is GPL-3.0: forks are welcome, but they must stay open source and
 preserve attribution (see NOTICE). This tool searches GitHub's code-search API
 for the project's forensic markers. A rebrander has to find and scrub *every*
-marker; they almost never do — so even a single hit establishes origin.
+marker; they almost never do - so even a single hit establishes origin.
 
 This is detection by scanning. It is NOT a beacon: the app phones nobody home.
 You run this periodically; it reports suspect repositories.
@@ -90,7 +90,7 @@ def main():
 
     print("\n=== Suspect repositories ===")
     if not hits:
-        print("None found. (No copies, or markers were fully scrubbed — widen MARKERS.)")
+        print("None found. (No copies, or markers were fully scrubbed - widen MARKERS.)")
         return
     for repo, found in sorted(hits.items(), key=lambda kv: -len(kv[1])):
         print(f"\n  https://github.com/{repo}")

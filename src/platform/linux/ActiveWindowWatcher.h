@@ -12,7 +12,7 @@ namespace dictapulse {
 ///
 /// Wayland (KDE): a client can't read the active window directly, so we load a
 /// tiny KWin script ONCE that hooks window-activation and pushes the focused
-/// window's resourceClass back to us over D-Bus. We cache it — zero cost at
+/// window's resourceClass back to us over D-Bus. We cache it - zero cost at
 /// dictation time. X11: queried on demand via xdotool.
 class ActiveWindowWatcher : public QObject {
     Q_OBJECT

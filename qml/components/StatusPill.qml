@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import DictaPulse
 
-// Tinted status chip with a glowing dot — sits flush on clay cards.
+// Tinted status chip with a glowing dot - sits flush on clay cards.
 Rectangle {
     id: pill
     property string text: ""

@@ -130,7 +130,7 @@ ApplicationWindow {
 
                     // Light / dark toggle: clay chip. The icon shows what a
                     // click switches *to*.
-                    // Input lives on this wrapper Item, NOT inside ClaySurface —
+                    // Input lives on this wrapper Item, NOT inside ClaySurface -
                     // children routed through its default-property alias don't
                     // receive pointer events.
                     Item {

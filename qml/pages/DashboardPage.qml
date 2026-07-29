@@ -62,7 +62,7 @@ ScrollView {
                     checked: appSettings.translateToEnglish
                     onToggled: appSettings.translateToEnglish = checked
                     ToolTip.visible: hovered
-                    ToolTip.text: qsTr("Use Whisper's translate task — speak in any language, get English text.")
+                    ToolTip.text: qsTr("Use Whisper's translate task - speak in any language, get English text.")
                     ToolTip.delay: 600
                 }
 
@@ -104,7 +104,7 @@ ScrollView {
                 Layout.fillWidth: true
             }
 
-            // Live mic level — helpful when diagnosing 'no speech detected'.
+            // Live mic level - helpful when diagnosing 'no speech detected'.
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4

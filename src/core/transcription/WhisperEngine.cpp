@@ -76,12 +76,12 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
 
     // Constrained auto-detect: whisper's open-set detector confuses Arabic with
     // Hebrew/Farsi/Urdu on short colloquial clips. When the user has a small set
-    // of enabled languages, restrict detection to that set — compute the mel,
+    // of enabled languages, restrict detection to that set - compute the mel,
     // ask whisper for per-language probabilities, and force the highest-scoring
     // *enabled* language. This keeps en/ar working while never picking 'he'.
     QString forcedLang;
     if (autoDetect && candidateLangs.size() == 1) {
-        // Only one enabled language: there's nothing to detect between — force it.
+        // Only one enabled language: there's nothing to detect between - force it.
         // (Falling through to open-set "auto" here is what made single-language
         // setups silently misbehave.)
         forcedLang = candidateLangs.first();
@@ -118,7 +118,7 @@ WhisperEngine::Result WhisperEngine::transcribe(const std::vector<float>& sample
     params.no_context = true;
     params.single_segment = false;
     params.suppress_blank = true;
-    // suppress_nst is aggressive on short utterances and rushed speech — many
+    // suppress_nst is aggressive on short utterances and rushed speech - many
     // valid transcriptions get filtered out as 'non-speech tokens'. Off.
     params.suppress_nst = false;
     // CRITICAL: detect_language=true means "detect language and STOP" (whisper.cpp

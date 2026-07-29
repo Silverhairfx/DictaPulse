@@ -3,7 +3,7 @@
 import QtQuick
 import DictaPulse
 
-// Animated number that counts up from 0 to `value` — for dashboard stat tiles.
+// Animated number that counts up from 0 to `value` - for dashboard stat tiles.
 Text {
     id: root
     property int value: 0

@@ -22,7 +22,7 @@ ScrollView {
 
         SectionCard {
             title: qsTr("Developer mode")
-            subtitle: qsTr("Built for developers, not just dictation. Pulse parses your speech with syntax awareness so code stays code — preserving camelCase, snake_case, CLI commands, and exact spacing.")
+            subtitle: qsTr("Built for developers, not just dictation. Pulse parses your speech with syntax awareness so code stays code - preserving camelCase, snake_case, CLI commands, and exact spacing.")
 
             SettingRow {
                 label: qsTr("Enable developer mode")
@@ -36,7 +36,7 @@ ScrollView {
 
         SectionCard {
             title: qsTr("Dev jargon")
-            subtitle: qsTr("Terms Pulse should always recognize and spell correctly — frameworks, tools, project names. Comma- or line-separated. These are fed to Whisper and your LLM.")
+            subtitle: qsTr("Terms Pulse should always recognize and spell correctly - frameworks, tools, project names. Comma- or line-separated. These are fed to Whisper and your LLM.")
             enabled: appSettings.devModeEnabled
             opacity: appSettings.devModeEnabled ? 1.0 : 0.5
 
@@ -67,7 +67,7 @@ ScrollView {
                 spacing: 8
                 Repeater {
                     model: [
-                        { t: qsTr("Syntax awareness"), d: qsTr("Keeps code as code — variables, CLI commands, exact spacing and formatting; no stray capitalization or punctuation in code tokens.") },
+                        { t: qsTr("Syntax awareness"), d: qsTr("Keeps code as code - variables, CLI commands, exact spacing and formatting; no stray capitalization or punctuation in code tokens.") },
                         { t: qsTr("Dev jargon"), d: qsTr("Recognizes terms like Supabase, Cloudflare, and Vercel. Anything it misses, add above with a single correction.") },
                         { t: qsTr("File recognition (coming soon)"), d: qsTr("In Cursor / VS Code, Pulse will recognize filenames as you speak and tag the right file in your workspace for more precise AI responses.") }
                     ]

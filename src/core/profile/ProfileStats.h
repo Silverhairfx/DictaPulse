@@ -12,7 +12,7 @@ namespace dictapulse {
 /// Tracks dictation usage so the Profile dashboard can show real metrics:
 /// total words, sessions, top apps, and a daily trend. Persisted to the same
 /// config store under a "stats/" group. This is also part of the user's
-/// "profile" — the picture of how they actually dictate.
+/// "profile" - the picture of how they actually dictate.
 class ProfileStats : public QObject {
     Q_OBJECT
     Q_PROPERTY(int totalWords READ totalWords NOTIFY changed)

@@ -17,14 +17,14 @@ ScrollView {
                 color: Theme.text
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
-                text: qsTr("DictaPulse is a local-first AI voice dictation tool for KDE Plasma.\nVersion 0.1.0 (beta) — free software under the GPL-3.0 license.")
+                text: qsTr("DictaPulse is a local-first AI voice dictation tool for KDE Plasma.\nVersion 0.1.0 (beta) - free software under the GPL-3.0 license.")
             }
             Label {
                 color: Theme.textDim
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
                 font.pixelSize: 12
-                text: qsTr("Built by Tymour Kadry (@silverhairfx). © ETK Technologies — https://etk-tech.com")
+                text: qsTr("Built by Tymour Kadry (@silverhairfx). © ETK Technologies - https://etk-tech.com")
             }
             Label {
                 color: Theme.textDim

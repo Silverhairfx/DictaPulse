@@ -32,7 +32,7 @@ QString TextProcessor::process(const QString& raw, const QString& language, cons
 
     // Arabic punctuation layer: Whisper emits Latin punctuation even for Arabic.
     // Map to the Arabic forms and tighten spacing. Letter-level corrections are
-    // left to the LLM cleanup providers — touching them here risks changing the
+    // left to the LLM cleanup providers - touching them here risks changing the
     // user's intended spelling.
     if (opts.cleanup && language.startsWith(QLatin1String("ar"))) {
         text.replace(QChar('?'), QChar(0x061F));  // ؟ Arabic question mark
@@ -59,7 +59,7 @@ QString TextProcessor::process(const QString& raw, const QString& language, cons
     }
 
     // Smart lists: when the speaker enumerates inline ("…for 1. apples 2. bananas
-    // 3. oranges"), break each numbered item onto its own line. Conservative —
+    // 3. oranges"), break each numbered item onto its own line. Conservative -
     // only fires when there are at least two "<n>. " or "<n>) " markers so we
     // don't mangle ordinary numbers like "section 1. introduction".
     if (opts.smartLists) {
@@ -94,7 +94,7 @@ QString TextProcessor::process(const QString& raw, const QString& language, cons
         text = out;
     }
 
-    // Personal dictionary — applied LAST so the user's exact target casing wins
+    // Personal dictionary - applied LAST so the user's exact target casing wins
     // over the sentence-capitalization pass above. Each rule is filtered by
     // language (empty = all, else prefix match), and honors its own
     // case-sensitivity and whole-word flags.

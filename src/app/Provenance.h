@@ -11,7 +11,7 @@ namespace dictapulse {
 // Tymour Kadry / ETK Technologies. It is surfaced in the About page and logged
 // at startup so it lives in the shipped binary, and it is mirrored in several
 // other places across the source and assets. Removing every copy from a
-// rebranded fork is laborious and almost never complete — partial matches still
+// rebranded fork is laborious and almost never complete - partial matches still
 // establish origin. See scripts/detect-forks.py to scan public repos for it.
 //
 // This is provenance, not DRM: it phones nobody home and restricts nothing.

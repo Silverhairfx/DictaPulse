@@ -60,10 +60,10 @@ class Settings : public QObject {
     Q_PROPERTY(QString cleanupSystemPrompt READ cleanupSystemPrompt WRITE setCleanupSystemPrompt NOTIFY cleanupSystemPromptChanged)
     Q_PROPERTY(bool cleanupUseVocab READ cleanupUseVocab WRITE setCleanupUseVocab NOTIFY cleanupUseVocabChanged)
 
-    // Personal dictionary — JSON array of {from,to,caseSensitive,wholeWord,lang}.
+    // Personal dictionary - JSON array of {from,to,caseSensitive,wholeWord,lang}.
     Q_PROPERTY(QString dictionary READ dictionary WRITE setDictionary NOTIFY dictionaryChanged)
     Q_PROPERTY(bool dictionaryBias READ dictionaryBias WRITE setDictionaryBias NOTIFY dictionaryBiasChanged)
-    // Per-app output rules — JSON array of {match,mode}; gated by enabled flag.
+    // Per-app output rules - JSON array of {match,mode}; gated by enabled flag.
     Q_PROPERTY(QString perAppRules READ perAppRules WRITE setPerAppRules NOTIFY perAppRulesChanged)
     Q_PROPERTY(bool perAppRulesEnabled READ perAppRulesEnabled WRITE setPerAppRulesEnabled NOTIFY perAppRulesEnabledChanged)
 

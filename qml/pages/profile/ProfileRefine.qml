@@ -18,7 +18,7 @@ ScrollView {
 
         SectionCard {
             title: qsTr("Refine")
-            subtitle: qsTr("Pulse goes beyond basic dictation — cleaning up speech as you go. These preferences shape every transcript and are shared with whichever AI model you've connected.")
+            subtitle: qsTr("Pulse goes beyond basic dictation - cleaning up speech as you go. These preferences shape every transcript and are shared with whichever AI model you've connected.")
 
             SettingRow {
                 label: qsTr("Remove fillers")
@@ -38,7 +38,7 @@ ScrollView {
             }
             SettingRow {
                 label: qsTr("Smart lists")
-                hint: qsTr("Speak the numbers — “for 1. Apples 2. Bananas 3. Oranges” — and Pulse turns it into a formatted list.")
+                hint: qsTr("Speak the numbers - “for 1. Apples 2. Bananas 3. Oranges” - and Pulse turns it into a formatted list.")
                 ClaySwitch {
                     checked: appSettings.refineSmartLists
                     onToggled: appSettings.refineSmartLists = checked
@@ -61,7 +61,7 @@ ScrollView {
                 wrapMode: Text.WordWrap
                 color: Theme.textDim
                 font.pixelSize: 12
-                text: qsTr("Offline rules apply instantly. When you connect a local or remote LLM on the Cleanup page, these same preferences are added to its instructions so it formats lists, fixes punctuation, applies corrections, and removes fillers in your voice — not a generic one.")
+                text: qsTr("Offline rules apply instantly. When you connect a local or remote LLM on the Cleanup page, these same preferences are added to its instructions so it formats lists, fixes punctuation, applies corrections, and removes fillers in your voice - not a generic one.")
             }
         }
     }

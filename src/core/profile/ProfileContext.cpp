@@ -61,7 +61,7 @@ QVector<TextProcessor::Replacement> replacements(const Settings* s)
     }
 
     // Voice templates: a spoken cue expands to its full text. Phrase-matched,
-    // case-insensitive — applied alongside the dictionary.
+    // case-insensitive - applied alongside the dictionary.
     for (const QJsonValue& v : parseArray(s->voiceTemplates())) {
         const QJsonObject o = v.toObject();
         TextProcessor::Replacement r;
@@ -120,14 +120,14 @@ QString systemPromptAugmentation(const Settings* s)
 
     // Developer mode.
     if (s->devModeEnabled()) {
-        lines << QStringLiteral("This is technical/developer dictation: preserve code verbatim — keep camelCase, snake_case, CLI commands, file paths and exact spacing; do not capitalize or punctuate code tokens.");
+        lines << QStringLiteral("This is technical/developer dictation: preserve code verbatim - keep camelCase, snake_case, CLI commands, file paths and exact spacing; do not capitalize or punctuate code tokens.");
         const QStringList jargon = splitTerms(s->devJargon());
         if (!jargon.isEmpty())
             lines << QStringLiteral("Recognize and spell these technical terms correctly: %1.")
                          .arg(jargon.join(QStringLiteral(", ")));
     }
 
-    // Dictionary — explicit spelling map so the LLM honors it too.
+    // Dictionary - explicit spelling map so the LLM honors it too.
     QStringList dictPairs;
     for (const QJsonValue& v : parseArray(s->dictionary())) {
         const QJsonObject o = v.toObject();

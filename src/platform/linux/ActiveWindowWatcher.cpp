@@ -81,7 +81,7 @@ void ActiveWindowWatcher::setupWayland()
         return;
     }
 
-    // Materialize the KWin script on disk — loadScript needs a real path.
+    // Materialize the KWin script on disk - loadScript needs a real path.
     const QString dir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     const QString scriptPath = (dir.isEmpty() ? QDir::tempPath() : dir)
         + QStringLiteral("/dictapulse-activewindow.js");

@@ -159,7 +159,7 @@ ScrollView {
 
         SectionCard {
             title: qsTr("Enabled languages")
-            subtitle: qsTr("Tick every language you dictate in — Whisper supports them all. Auto-detect is constrained to this set; enabling exactly one forces that language. Also used for per-language vocabulary.")
+            subtitle: qsTr("Tick every language you dictate in - Whisper supports them all. Auto-detect is constrained to this set; enabling exactly one forces that language. Also used for per-language vocabulary.")
 
             ClayTextField {
                 Layout.fillWidth: true

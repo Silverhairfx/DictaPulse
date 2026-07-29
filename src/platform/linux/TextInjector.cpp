@@ -59,7 +59,7 @@ void TextInjector::copyToClipboard(const QString& text)
 
     // Prefer Klipper's own setter when it's running. Klipper is KDE's clipboard
     // manager and will otherwise *revert* the clipboard to its last history item
-    // when an external client (wl-copy / Qt) grabs ownership — which produced
+    // when an external client (wl-copy / Qt) grabs ownership - which produced
     // stale pastes. Setting through Klipper makes Klipper the authoritative
     // owner, so the content sticks.
     bool klipperOk = false;

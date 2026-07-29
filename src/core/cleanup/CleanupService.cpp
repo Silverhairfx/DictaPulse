@@ -131,7 +131,7 @@ void CleanupService::handleReply(QNetworkReply* reply, bool anthropic)
 
     if (reply->error() != QNetworkReply::NoError) {
         QString detail = reply->errorString();
-        // Surface the API's own error message when present — far more useful.
+        // Surface the API's own error message when present - far more useful.
         const QJsonObject obj = QJsonDocument::fromJson(data).object();
         if (obj.contains("error")) {
             const QJsonValue e = obj.value("error");

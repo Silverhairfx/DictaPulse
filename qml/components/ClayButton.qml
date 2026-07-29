@@ -32,7 +32,7 @@ Button {
     implicitHeight: small ? 30 : 36
     implicitWidth: Math.max(label.implicitWidth + leftPadding + rightPadding,
                             small ? 64 : 84)
-    // Own the padding — the base style's defaults would squeeze the label.
+    // Own the padding - the base style's defaults would squeeze the label.
     padding: 0
     leftPadding: small ? 13 : 17
     rightPadding: small ? 13 : 17

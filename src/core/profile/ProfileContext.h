@@ -18,7 +18,7 @@ class Settings;
 ///   • systemPromptAugmentation() → appended to the cleanup-LLM system prompt
 ///   • replacements()             → deterministic find/replace + template expansion
 ///
-/// This is what lets *any* plugged-in model — rules, local LLM, or remote API —
+/// This is what lets *any* plugged-in model - rules, local LLM, or remote API -
 /// read from the Profile and produce more precise transcriptions and responses.
 namespace ProfileContext {
 
@@ -30,7 +30,7 @@ QVector<TextProcessor::Replacement> replacements(const Settings* s);
 QString whisperVocabulary(const Settings* s);
 
 /// Natural-language instruction block describing the user's tone, refine
-/// preferences, dev context, dictionary and templates — appended to the
+/// preferences, dev context, dictionary and templates - appended to the
 /// cleanup LLM's system prompt. Empty when nothing is active.
 QString systemPromptAugmentation(const Settings* s);
 

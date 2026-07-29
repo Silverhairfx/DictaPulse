@@ -26,7 +26,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Anonymous telemetry")
-                hint: qsTr("Off by default. No personal data is sent — only crash counts and feature usage. (Stub for now: nothing is collected.)")
+                hint: qsTr("Off by default. No personal data is sent - only crash counts and feature usage. (Stub for now: nothing is collected.)")
                 ClaySwitch {
                     checked: appSettings.telemetryEnabled
                     onToggled: appSettings.telemetryEnabled = checked
@@ -36,7 +36,7 @@ ScrollView {
 
         SectionCard {
             title: qsTr("Microphone")
-            subtitle: qsTr("DictaPulse only records while the overlay is visible. KDE shows a microphone indicator in the status area whenever any app is using the mic — DictaPulse honors that system indicator.")
+            subtitle: qsTr("DictaPulse only records while the overlay is visible. KDE shows a microphone indicator in the status area whenever any app is using the mic - DictaPulse honors that system indicator.")
             Label {
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true

@@ -5,7 +5,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import DictaPulse
 
-// Personalize: the usage dashboard + the things that make Pulse sound like you —
+// Personalize: the usage dashboard + the things that make Pulse sound like you -
 // your dictionary, voice templates, and tone. All feed the AI via ProfileContext.
 ScrollView {
     id: root
@@ -60,7 +60,7 @@ ScrollView {
         // ---- Usage dashboard ----
         SectionCard {
             title: qsTr("Usage")
-            subtitle: qsTr("Track adoption and impact — total words, top apps, and trends.")
+            subtitle: qsTr("Track adoption and impact - total words, top apps, and trends.")
 
             GridLayout {
                 Layout.fillWidth: true
@@ -140,14 +140,14 @@ ScrollView {
                 wrapMode: Text.WordWrap
                 color: Theme.textDim
                 font.pixelSize: 12
-                text: qsTr("No dictation recorded yet — your trends and top apps will appear here as you use Pulse.")
+                text: qsTr("No dictation recorded yet - your trends and top apps will appear here as you use Pulse.")
             }
         }
 
         // ---- Tone & style ----
         SectionCard {
             title: qsTr("Tone & style")
-            subtitle: qsTr("Let Pulse shape your tone so you always sound like you — formal in docs, casual in chats. Applied by your connected LLM cleanup provider.")
+            subtitle: qsTr("Let Pulse shape your tone so you always sound like you - formal in docs, casual in chats. Applied by your connected LLM cleanup provider.")
             SettingRow {
                 label: qsTr("Tone")
                 ClayComboBox {
@@ -155,7 +155,7 @@ ScrollView {
                     textRole: "name"
                     valueRole: "value"
                     model: [
-                        { value: "off",          name: qsTr("Off — don’t change my tone") },
+                        { value: "off",          name: qsTr("Off - don’t change my tone") },
                         { value: "neutral",      name: qsTr("Neutral & clear") },
                         { value: "formal",       name: qsTr("Formal") },
                         { value: "casual",       name: qsTr("Casual") },
@@ -171,7 +171,7 @@ ScrollView {
         // ---- Dictionary ----
         SectionCard {
             title: qsTr("Dictionary")
-            subtitle: qsTr("Pulse learns your words. Add names, industry terms, or unique spellings — they’re applied to every transcript and used to bias Whisper. Replacement casing is preserved.")
+            subtitle: qsTr("Pulse learns your words. Add names, industry terms, or unique spellings - they’re applied to every transcript and used to bias Whisper. Replacement casing is preserved.")
 
             SettingRow {
                 label: qsTr("Bias Whisper toward these spellings")
@@ -229,7 +229,7 @@ ScrollView {
         // ---- Voice templates ----
         SectionCard {
             title: qsTr("Voice templates")
-            subtitle: qsTr("Create shortcuts for things you say often — scheduling links, intros, FAQs. Speak the cue and Pulse pastes the full text exactly where you need it.")
+            subtitle: qsTr("Create shortcuts for things you say often - scheduling links, intros, FAQs. Speak the cue and Pulse pastes the full text exactly where you need it.")
 
             Repeater {
                 model: root.templates

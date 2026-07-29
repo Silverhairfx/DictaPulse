@@ -17,7 +17,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Show overlay while dictating")
-                hint: qsTr("If off, no floating bar appears — rely on the tray icon for visual feedback.")
+                hint: qsTr("If off, no floating bar appears - rely on the tray icon for visual feedback.")
                 ClaySwitch {
                     checked: appSettings.overlayEnabled
                     onToggled: appSettings.overlayEnabled = checked
@@ -123,7 +123,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Sound alerts")
-                hint: qsTr("Play a rising tone when listening starts and a falling tone when it stops — an audible (and accessible) cue. Independent of the visual overlay.")
+                hint: qsTr("Play a rising tone when listening starts and a falling tone when it stops - an audible (and accessible) cue. Independent of the visual overlay.")
                 ClaySwitch {
                     checked: appSettings.overlaySounds
                     onToggled: appSettings.overlaySounds = checked
@@ -132,7 +132,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Reduce motion")
-                hint: qsTr("Slower, less animated waveform — easier on the eyes.")
+                hint: qsTr("Slower, less animated waveform - easier on the eyes.")
                 ClaySwitch {
                     checked: appSettings.overlayReduceMotion
                     onToggled: appSettings.overlayReduceMotion = checked

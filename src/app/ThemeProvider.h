@@ -11,7 +11,7 @@ namespace dictapulse {
 // Central design tokens for the QML UI, exposed to QML as the `Theme` singleton.
 //
 // "Tactile pop" clay design: opaque surfaces molded out
-// of the canvas with a pillow-emboss treatment — inset top-left highlight,
+// of the canvas with a pillow-emboss treatment - inset top-left highlight,
 // inset bottom-right shade, plush drop shadow. Light mode is a white canvas
 // with vivid indigo primary and cool-violet neutrals; dark mode is a deep
 // blue-slate scale with a luminous indigo accent.
@@ -57,7 +57,7 @@ class ThemeProvider : public QObject {
     Q_PROPERTY(QColor washB READ washB NOTIFY changed)
     Q_PROPERTY(QColor washC READ washC NOTIFY changed)
 
-    // Display (headline) font family — serif, loaded from resources at startup.
+    // Display (headline) font family - serif, loaded from resources at startup.
     Q_PROPERTY(QString displayFont READ displayFont NOTIFY changed)
 
     Q_PROPERTY(int radius READ radius CONSTANT)

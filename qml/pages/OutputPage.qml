@@ -45,7 +45,7 @@ ScrollView {
                     model: [
                         { value: "insert",     label: qsTr("Direct insertion (default)") },
                         { value: "copy-paste", label: qsTr("Copy + paste (Ctrl+V)") },
-                        { value: "clipboard",  label: qsTr("Clipboard only — never paste") }
+                        { value: "clipboard",  label: qsTr("Clipboard only - never paste") }
                     ]
                     textRole: "label"
                     valueRole: "value"
@@ -56,7 +56,7 @@ ScrollView {
 
             SettingRow {
                 label: qsTr("Fall back to clipboard if insertion fails")
-                hint: qsTr("Recommended on Wayland — direct injection can fail in privileged windows.")
+                hint: qsTr("Recommended on Wayland - direct injection can fail in privileged windows.")
                 ClaySwitch {
                     checked: appSettings.clipboardFallback
                     onToggled: appSettings.clipboardFallback = checked
@@ -100,7 +100,7 @@ ScrollView {
 
         SectionCard {
             title: qsTr("Per-app output rules")
-            subtitle: qsTr("Override the output mode for specific apps. The first rule whose text appears in the focused window's app-id wins — e.g. \"konsole\" → Copy + paste so dictation lands in your terminal. Falls back to the default mode above when nothing matches.")
+            subtitle: qsTr("Override the output mode for specific apps. The first rule whose text appears in the focused window's app-id wins - e.g. \"konsole\" → Copy + paste so dictation lands in your terminal. Falls back to the default mode above when nothing matches.")
 
             SettingRow {
                 label: qsTr("Enable per-app rules")
