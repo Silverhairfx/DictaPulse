@@ -103,6 +103,10 @@ public:
     /// Capture device: an explicit id, or empty for automatic selection that
     /// prefers a device matching `preferredMicrophones` (comma separated,
     /// case-insensitive) and otherwise uses the system default.
+    /// Extra window classes (comma separated) treated as terminal emulators.
+    QString terminalClasses() const;
+    void setTerminalClasses(const QString& value);
+
     QString inputDevice() const;
     void setInputDevice(const QString& value);
     QString preferredMicrophones() const;

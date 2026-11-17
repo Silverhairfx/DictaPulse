@@ -72,6 +72,9 @@ as accidental and discarded.
   Shift on Hyprland (the application sees a plain `v`), so the shortcut would silently do
   nothing.
 
+Terminal emulators the built-in list does not know can be added with
+`output/terminalClasses` (comma separated window classes).
+
 ## Microphone
 
 The system default input is never changed. DictaPulse picks the first input whose id or

@@ -18,6 +18,7 @@ constexpr auto kOutputMode = "output/mode";
 constexpr auto kClipboardFallback = "output/clipboardFallback";
 constexpr auto kPressEnter = "output/pressEnterAfterInsert";
 constexpr auto kInputDevice = "audio/inputDevice";
+constexpr auto kTerminalClasses = "output/terminalClasses";
 constexpr auto kPreferredMics = "audio/preferredMicrophones";
 constexpr auto kActiveModel = "models/active";
 constexpr auto kDefaultLanguage = "language/default";
@@ -144,6 +145,7 @@ DICTAPULSE_SETTING_STR(dictationMode, setDictationMode, kDictationMode, "toggle"
 DICTAPULSE_SETTING_STR(outputMode, setOutputMode, kOutputMode, "insert", outputModeChanged)
 DICTAPULSE_SETTING_BOOL(clipboardFallback, setClipboardFallback, kClipboardFallback, true, clipboardFallbackChanged)
 DICTAPULSE_SETTING_BOOL(pressEnterAfterInsert, setPressEnterAfterInsert, kPressEnter, false, outputModeChanged)
+DICTAPULSE_SETTING_STR(terminalClasses, setTerminalClasses, kTerminalClasses, "", outputModeChanged)
 DICTAPULSE_SETTING_STR(inputDevice, setInputDevice, kInputDevice, "", inputDeviceChanged)
 DICTAPULSE_SETTING_STR(preferredMicrophones, setPreferredMicrophones, kPreferredMics, "boya,by-cm3", inputDeviceChanged)
 DICTAPULSE_SETTING_STR(activeModel, setActiveModel, kActiveModel, "", activeModelChanged)

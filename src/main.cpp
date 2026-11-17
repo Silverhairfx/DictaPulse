@@ -10,6 +10,7 @@
 #include "core/models/ModelManager.h"
 #include "core/profile/ProfileStats.h"
 #include "platform/linux/ControlChannel.h"
+#include "platform/linux/InsertionPolicy.h"
 #include "platform/linux/LinuxAdapter.h"
 #include "platform/linux/OverlayShell.h"
 
@@ -181,6 +182,12 @@ int main(int argc, char* argv[])
     QQuickStyle::setStyle(QStringLiteral("Material"));
 
     auto* settings = new dictapulse::Settings(&app);
+    auto applyTerminalClasses = [settings]() {
+        dictapulse::insertion::setExtraTerminalClasses(
+            settings->terminalClasses().split(QLatin1Char(','), Qt::SkipEmptyParts));
+    };
+    applyTerminalClasses();
+    QObject::connect(settings, &dictapulse::Settings::outputModeChanged, &app, applyTerminalClasses);
 
     // Theme singleton: clay design tokens for both modes; follows the KDE
     // color scheme for the "system" preference. Exposed to QML as `Theme`.

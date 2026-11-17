@@ -42,6 +42,9 @@ struct Decision {
 
 /// Terminal emulators take ctrl+shift+v for paste, everything else ctrl+v.
 bool isTerminalClass(const QString& windowClass);
+/// Additional window classes to treat as terminals (user setting, lowercase
+/// match), for terminal emulators the built-in list does not know.
+void setExtraTerminalClasses(const QStringList& classes);
 /// A window counts as a terminal by class or, for custom classes, by the name of
 /// its process (a kitty started with --class scratch is still kitty).
 bool isTerminalWindow(const HyprWindow& window);

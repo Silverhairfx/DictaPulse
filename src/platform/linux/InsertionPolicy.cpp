@@ -32,15 +32,31 @@ const QStringList& terminalClasses()
         QStringLiteral("lxterminal"),
         QStringLiteral("rio"),
         QStringLiteral("contour"),
-        QStringLiteral("herdr-app"),
     };
+    return v;
+}
+
+QStringList& extraTerminalClasses()
+{
+    static QStringList v;
     return v;
 }
 } // namespace
 
+void setExtraTerminalClasses(const QStringList& classes)
+{
+    QStringList cleaned;
+    for (const QString& c : classes) {
+        const QString t = c.trimmed().toLower();
+        if (!t.isEmpty()) cleaned << t;
+    }
+    extraTerminalClasses() = cleaned;
+}
+
 bool isTerminalClass(const QString& windowClass)
 {
-    return terminalClasses().contains(windowClass.trimmed().toLower());
+    const QString c = windowClass.trimmed().toLower();
+    return terminalClasses().contains(c) || extraTerminalClasses().contains(c);
 }
 
 bool isTerminalWindow(const HyprWindow& w)

@@ -40,10 +40,9 @@ private slots:
         QTest::newRow("alacritty") << "Alacritty" << true;
         QTest::newRow("wezterm") << "org.wezfurlong.wezterm" << true;
         QTest::newRow("konsole") << "org.kde.konsole" << true;
-        QTest::newRow("herdr") << "herdr-app" << true;
         QTest::newRow("chrome") << "google-chrome" << false;
         QTest::newRow("slack") << "Slack" << false;
-        QTest::newRow("claude") << "claude" << false;
+        QTest::newRow("discord") << "discord" << false;
         QTest::newRow("firefox") << "firefox" << false;
         QTest::newRow("empty") << "" << false;
         QTest::newRow("substring is not a terminal") << "skitty-game" << false;
@@ -65,6 +64,17 @@ private slots:
         const Decision d = decide(inputs("one\ntwo", "insert", w, w));
         QCOMPARE(d.route, Route::Type);               // terminal: flattened, not pasted
         QCOMPARE(d.text, QStringLiteral("one two"));
+    }
+
+    void extraTerminalClassesFromSettings()
+    {
+        QVERIFY(!isTerminalClass("my-term"));
+        setExtraTerminalClasses({ " My-Term ", "", "other" });
+        QVERIFY(isTerminalClass("my-term"));
+        QVERIFY(isTerminalClass("OTHER"));
+        QCOMPARE(pasteChordFor("my-term"), PasteChord::CtrlShiftV);
+        setExtraTerminalClasses({});
+        QVERIFY(!isTerminalClass("my-term"));
     }
 
     void chordArguments()
