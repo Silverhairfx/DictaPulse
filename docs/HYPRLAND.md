@@ -65,9 +65,12 @@ as accidental and discarded.
   applications multi-line text is pasted. DictaPulse presses Enter only when
   `output/pressEnterAfterInsert=true` is set in the settings file, and then only once,
   after a successful insertion into the original window.
-- Paste uses `ctrl+shift+v` in terminal emulators (recognised by window class or, for a custom
-  class, by process name: kitty, foot, alacritty, wezterm,
-  konsole, ghostty, ...) and `ctrl+v` everywhere else.
+- Paste (`output/mode=copy-paste`, or multi-line text in a GUI application) uses `ctrl+v`.
+- Terminal emulators (recognised by window class or, for a custom class, by process name:
+  kitty, foot, alacritty, wezterm, konsole, ghostty, ...) always get typed text instead of
+  a paste. Their paste shortcut is `ctrl+shift+v`, but a virtual keyboard cannot apply
+  Shift on Hyprland (the application sees a plain `v`), so the shortcut would silently do
+  nothing.
 
 ## Microphone
 

@@ -96,10 +96,16 @@ Decision decide(const Inputs& in)
     const bool terminal = isTerminalWindow(in.current);
     const bool multiline = hasLineBreak(in.text);
 
-    if (in.mode == QLatin1String("copy-paste")) {
+    if (in.mode == QLatin1String("copy-paste") && !terminal) {
         d.route = Route::Paste;
-        // Pasting a line break into a terminal can execute a command.
-        if (multiline && terminal) d.text = flattenLineBreaks(in.text);
+    } else if (in.mode == QLatin1String("copy-paste")) {
+        // Terminals paste with ctrl+shift+v, but a virtual keyboard cannot apply
+        // Shift on this stack (clients see a plain "v"), so the chord would do
+        // nothing while reporting success. Typing is reliable, layout independent
+        // and needs no clipboard, so a terminal always gets typed text. Pasting a
+        // line break could execute a command, so line breaks become spaces.
+        d.route = Route::Type;
+        if (multiline) d.text = flattenLineBreaks(in.text);
     } else {
         // "insert" (and anything unknown): type through the virtual keyboard.
         if (multiline && !terminal) {

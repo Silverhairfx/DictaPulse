@@ -120,13 +120,21 @@ private slots:
         QVERIFY(!d.focusChanged);
     }
 
-    void copyPasteUsesTerminalChord()
+    void copyPasteInGuiAppUsesCtrlV()
     {
-        const Decision d = decide(inputs("hello", "copy-paste", win("0xA", "kitty"), win("0xA", "kitty")));
-        QCOMPARE(d.route, Route::Paste);
-        QCOMPARE(d.chord, PasteChord::CtrlShiftV);
         const Decision g = decide(inputs("hello", "copy-paste", win("0xC", "slack"), win("0xC", "slack")));
+        QCOMPARE(g.route, Route::Paste);
         QCOMPARE(g.chord, PasteChord::CtrlV);
+    }
+
+    void copyPasteInTerminalTypesInstead()
+    {
+        // A virtual keyboard cannot apply Shift here, so ctrl+shift+v would silently
+        // do nothing. Terminals get typed text, with line breaks flattened.
+        const Decision d = decide(inputs("one\ntwo", "copy-paste", win("0xA", "kitty"), win("0xA", "kitty")));
+        QCOMPARE(d.route, Route::Type);
+        QCOMPARE(d.text, QStringLiteral("one two"));
+        QCOMPARE(d.chord, PasteChord::CtrlShiftV); // the chord is still what a terminal would use
     }
 
     void arabicTextIsTypedUnchanged()
