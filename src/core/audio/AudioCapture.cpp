@@ -2,11 +2,14 @@
 // Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "AudioCapture.h"
 
+#include "InputDeviceSelector.h"
+
 #include <QAudioDevice>
 #include <QAudioFormat>
 #include <QAudioSource>
 #include <QDateTime>
 #include <QDebug>
+#include <QFile>
 #include <QMediaDevices>
 
 #include <algorithm>
@@ -42,16 +45,100 @@ AudioCapture::~AudioCapture()
     stop();
 }
 
+// Test hook: DICTAPULSE_TEST_AUDIO=<file.wav> replaces the microphone with a
+// recorded file (16-bit PCM, any rate or channel count), so the full
+// transcription and insertion path can be exercised without a person speaking.
+bool AudioCapture::startFromFile(const QString& path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) {
+        emit error(tr("Cannot open test audio %1").arg(path));
+        return false;
+    }
+    const QByteArray raw = f.readAll();
+    auto u16 = [&raw](int off) { return static_cast<quint16>(static_cast<quint8>(raw[off]) | (static_cast<quint8>(raw[off + 1]) << 8)); };
+    auto u32 = [&u16](int off) { return static_cast<quint32>(u16(off)) | (static_cast<quint32>(u16(off + 2)) << 16); };
+    if (raw.size() < 44 || raw.mid(0, 4) != "RIFF" || raw.mid(8, 4) != "WAVE") {
+        emit error(tr("Test audio is not a WAV file"));
+        return false;
+    }
+    int channels = 1, rate = kSampleRate, bits = 16, dataOff = -1, dataLen = 0;
+    for (int off = 12; off + 8 <= raw.size();) {
+        const QByteArray id = raw.mid(off, 4);
+        const int len = static_cast<int>(u32(off + 4));
+        if (id == "fmt ") {
+            channels = u16(off + 10);
+            rate = static_cast<int>(u32(off + 12));
+            bits = u16(off + 22);
+        } else if (id == "data") {
+            dataOff = off + 8;
+            dataLen = std::min<int>(len, static_cast<int>(raw.size()) - dataOff);
+            break;
+        }
+        off += 8 + len + (len & 1);
+    }
+    if (dataOff < 0 || bits != 16 || channels < 1 || rate <= 0) {
+        emit error(tr("Test audio must be 16-bit PCM WAV"));
+        return false;
+    }
+    const auto* in = reinterpret_cast<const qint16*>(raw.constData() + dataOff);
+    const qsizetype frames = dataLen / (2 * channels);
+    QVector<qint16> mono(frames);
+    for (qsizetype i = 0; i < frames; ++i) {
+        int sum = 0;
+        for (int c = 0; c < channels; ++c) sum += in[i * channels + c];
+        mono[i] = static_cast<qint16>(sum / channels);
+    }
+    const qsizetype outFrames = static_cast<qsizetype>(static_cast<double>(frames) * kSampleRate / rate);
+    m_pcm.clear();
+    m_pcm.resize(outFrames * 2);
+    auto* out = reinterpret_cast<qint16*>(m_pcm.data());
+    for (qsizetype i = 0; i < outFrames; ++i) {
+        const double pos = static_cast<double>(i) * rate / kSampleRate;
+        const qsizetype i0 = std::min<qsizetype>(static_cast<qsizetype>(pos), frames - 1);
+        const qsizetype i1 = std::min<qsizetype>(i0 + 1, frames - 1);
+        const double frac = pos - static_cast<double>(i0);
+        out[i] = static_cast<qint16>(mono[i0] * (1.0 - frac) + mono[i1] * frac);
+    }
+    m_peakRms = computeRms(out, outFrames);
+    m_vadThreshold = 0.005;
+    m_recording = true;
+    std::fprintf(stderr, "[DictaPulse] test audio: %s (%.1fs)\n", qUtf8Printable(path),
+                 static_cast<double>(outFrames) / kSampleRate);
+    std::fflush(stderr);
+    emit started();
+    return true;
+}
+
 void AudioCapture::start(double vadThreshold, int silenceMs, int maxSeconds)
 {
     if (m_recording) return;
+
+    const QString testAudio = qEnvironmentVariable("DICTAPULSE_TEST_AUDIO");
+    if (!testAudio.isEmpty()) {
+        startFromFile(testAudio);
+        return;
+    }
 
     QAudioFormat fmt;
     fmt.setSampleRate(kSampleRate);
     fmt.setChannelCount(kChannels);
     fmt.setSampleFormat(QAudioFormat::Int16);
 
-    const QAudioDevice device = QMediaDevices::defaultAudioInput();
+    QAudioDevice device = QMediaDevices::defaultAudioInput();
+    {
+        const QList<QAudioDevice> inputs = QMediaDevices::audioInputs();
+        QVector<InputCandidate> cands;
+        cands.reserve(inputs.size());
+        for (const QAudioDevice& d : inputs) {
+            cands.push_back({ d.id(), d.description(), d.isDefault() });
+        }
+        const int idx = pickInputDevice(cands, m_explicitDevice, m_preferredPatterns);
+        if (idx >= 0) device = inputs.at(idx);
+    }
+    m_lastDevice = device.description();
+    std::fprintf(stderr, "[DictaPulse] input device: %s\n", qUtf8Printable(m_lastDevice));
+    std::fflush(stderr);
     if (device.isNull()) {
         emit error(tr("No audio input device available."));
         return;

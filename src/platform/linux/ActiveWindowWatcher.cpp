@@ -45,7 +45,13 @@ ActiveWindowWatcher::ActiveWindowWatcher(QObject* parent)
     m_isWayland = env.value("XDG_SESSION_TYPE").compare("wayland", Qt::CaseInsensitive) == 0
         || !env.value("WAYLAND_DISPLAY").isEmpty();
 
-    if (m_isWayland) setupWayland();
+    m_hypr = HyprlandIpc::available();
+
+    // The KWin script only makes sense under KDE; on Hyprland the IPC socket
+    // answers directly, so nothing needs to be loaded or registered.
+    const QString desktop = env.value("XDG_CURRENT_DESKTOP");
+    if (!m_hypr && m_isWayland && desktop.contains(QStringLiteral("KDE"), Qt::CaseInsensitive))
+        setupWayland();
 }
 
 ActiveWindowWatcher::~ActiveWindowWatcher()
@@ -64,7 +70,13 @@ void ActiveWindowWatcher::report(const QString& windowClass)
 
 QString ActiveWindowWatcher::activeWindowId() const
 {
+    if (m_hypr) return HyprlandIpc::activeWindow().cls;
     return m_isWayland ? m_current : queryX11();
+}
+
+HyprWindow ActiveWindowWatcher::activeWindow() const
+{
+    return m_hypr ? HyprlandIpc::activeWindow() : HyprWindow();
 }
 
 void ActiveWindowWatcher::setupWayland()

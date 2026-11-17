@@ -58,7 +58,13 @@ qt_policy(SET QTP0004 NEW)
 
 # Secure storage for LLM API keys (KWallet/libsecret on Linux, Credential
 # Manager on Windows, Keychain on macOS - same API across all three).
-find_package(Qt6Keychain REQUIRED)
+# Optional: without it remote-provider API keys are kept in memory only.
+find_package(Qt6Keychain QUIET)
+if(Qt6Keychain_FOUND)
+    message(STATUS "DictaPulse: QtKeychain found, secure key storage enabled")
+else()
+    message(STATUS "DictaPulse: QtKeychain not found, API keys will not persist")
+endif()
 
 # ---- Optional: KDE Frameworks 6 ----
 set(DICTAPULSE_HAVE_KF6 FALSE)
@@ -117,3 +123,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(whisper_cpp)
 
 add_subdirectory(src)
+
+option(DICTAPULSE_BUILD_TESTS "Build the unit tests" ON)
+if(DICTAPULSE_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

@@ -32,8 +32,19 @@ Window {
 
     // Mapped whenever the feature is on; presence is driven by the pill's opacity,
     // not by mapping/unmapping the window.
-    visible: appSettings.overlayEnabled
+    // Bound in Component.onCompleted: a layer-shell surface (Hyprland and other
+    // wlroots-style compositors) must be configured before its first show.
+    visible: false
     opacity: appSettings.overlayOpacity
+
+    Component.onCompleted: {
+        overlayShell.attach(overlayWin, appSettings.overlayPosition)
+        overlayWin.visible = Qt.binding(function() { return appSettings.overlayEnabled })
+    }
+    Connections {
+        target: appSettings
+        function onOverlayPositionChanged() { overlayShell.reposition(appSettings.overlayPosition) }
+    }
 
     readonly property bool active: controller.state === "listening"
                                  || controller.state === "processing"

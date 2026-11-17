@@ -4,6 +4,7 @@
 
 #include "Settings.h"
 #include "core/audio/AudioCapture.h"
+#include "core/audio/InputDeviceSelector.h"
 #include "core/cleanup/CleanupService.h"
 #include "core/cleanup/SecretStore.h"
 #include "core/hardware/HardwareInfo.h"
@@ -58,6 +59,10 @@ Controller::Controller(Settings* settings,
 
     connect(m_platform, &PlatformAdapter::dictationShortcutPressed,
             this, &Controller::onDictationShortcut);
+    connect(m_platform, &PlatformAdapter::pushToTalkPressed,
+            this, &Controller::onPttPressed);
+    connect(m_platform, &PlatformAdapter::pushToTalkReleased,
+            this, &Controller::onPttReleased);
     connect(m_platform, &PlatformAdapter::cancelShortcutPressed,
             this, &Controller::onCancelShortcut);
     connect(m_platform, &PlatformAdapter::traySettingsRequested,
@@ -276,6 +281,10 @@ void Controller::startDictation()
     // per-app rules and usage stats both key off the app-id, which our overlay
     // must not perturb later.
     m_dictationApp = m_platform ? m_platform->activeWindowId() : QString();
+    // Remember the exact window too, so insertion can refuse to type elsewhere.
+    if (m_platform) m_platform->captureTarget();
+    m_capture->setDevicePreference(m_settings->inputDevice(),
+                                   parsePreferredPatterns(m_settings->preferredMicrophones()));
     m_effectiveOutputMode = resolveOutputMode();
     if (m_settings->overlayEnabled()) emit overlayRequested(true);
     m_capture->start(m_settings->vadThreshold(),
@@ -289,8 +298,31 @@ void Controller::stopDictation()
     m_capture->stop();
 }
 
+void Controller::pushToTalkPressed()
+{
+    if (m_dictationActive) return;
+    m_pttHeld = true;
+    m_pttTimer.start();
+    startDictation();
+    if (!m_dictationActive) m_pttHeld = false; // could not start (no model, no mic)
+}
+
+void Controller::pushToTalkReleased()
+{
+    if (!m_pttHeld) return;
+    m_pttHeld = false;
+    if (!m_dictationActive) return;
+    // A very short press is an accidental tap, not speech: drop it quietly.
+    if (m_pttTimer.isValid() && m_pttTimer.elapsed() < 250) {
+        cancelDictation();
+        return;
+    }
+    stopDictation();
+}
+
 void Controller::cancelDictation()
 {
+    m_pttHeld = false;
     if (!m_dictationActive) {
         emit overlayRequested(false);
         return;
@@ -324,7 +356,7 @@ void Controller::onCaptureError(const QString& message)
 void Controller::onSilenceDetected()
 {
     if (!m_dictationActive) return;
-    if (m_settings->dictationMode() == "ptt") return; // push-to-talk ignores auto-stop
+    if (m_pttHeld || m_settings->dictationMode() == "ptt") return; // push-to-talk ignores auto-stop
     stopDictation();
 }
 
@@ -405,7 +437,7 @@ void Controller::runTranscription()
                 if (peakRms < 0.003) {
                     setState("idle", tr("No audio (%1) - check mic input").arg(diag));
                     emit notify(tr("DictaPulse"),
-                                tr("Microphone seems silent. Verify your default input in KDE System Settings → Audio → Recording."));
+                                tr("Microphone seems silent. Verify your input device in the system audio settings."));
                 } else {
                     setState("idle", tr("Whisper returned nothing (%1) - try a longer phrase or a bigger model").arg(diag));
                     emit notify(tr("DictaPulse"),
@@ -490,9 +522,11 @@ void Controller::finalizeInjection(const QString& text, const QString& mode, boo
         m_stats->record(words, m_dictationApp);
     }
 
+    m_platform->setPressEnterAfterInsert(m_settings->pressEnterAfterInsert());
     const auto inj = m_platform->injectText(text, mode, fallback);
     const char* injStr = inj == PlatformAdapter::InjectResult::Inserted ? "Inserted"
                        : inj == PlatformAdapter::InjectResult::ClipboardOnly ? "ClipboardOnly"
+                       : inj == PlatformAdapter::InjectResult::FocusChanged ? "FocusChanged"
                        : "Failed";
     std::fprintf(stderr,
                  "[DictaPulse] inject mode='%s' fallback=%d result=%s chars=%lld\n",
@@ -507,6 +541,10 @@ void Controller::finalizeInjection(const QString& text, const QString& mode, boo
     case PlatformAdapter::InjectResult::ClipboardOnly:
         detail = tr("Copied to clipboard");
         emit notify(tr("DictaPulse"), tr("Copied %1 characters to clipboard").arg(text.size()));
+        break;
+    case PlatformAdapter::InjectResult::FocusChanged:
+        detail = tr("Focus changed, text copied");
+        emit notify(tr("DictaPulse"), tr("Focus changed, text copied to clipboard (%1 characters)").arg(text.size()));
         break;
     case PlatformAdapter::InjectResult::Failed:
         detail = tr("Insertion failed");

@@ -16,6 +16,7 @@ public:
     enum class InjectResult {
         Inserted,
         ClipboardOnly,
+        FocusChanged,  // the target window lost focus; text was only copied
         Failed,
     };
 
@@ -44,8 +45,19 @@ public:
     /// if it can't be determined. Used by per-app output rules. Default: none.
     virtual QString activeWindowId() const { return {}; }
 
+    /// Remember which window currently has focus. Called when dictation starts so
+    /// that insertion can refuse to type into a different window later.
+    virtual void captureTarget() {}
+
+    /// Opt-in: press Enter once after inserting text. Default off.
+    virtual void setPressEnterAfterInsert(bool) {}
+
 signals:
     void dictationShortcutPressed();
+    /// Hold-to-talk: emitted on key press and key release when the desktop can
+    /// report both (control interface bound to press/release keys).
+    void pushToTalkPressed();
+    void pushToTalkReleased();
     void cancelShortcutPressed();
     void trayToggleRequested();
     void trayQuitRequested();

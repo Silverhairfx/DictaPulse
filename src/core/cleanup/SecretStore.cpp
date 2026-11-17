@@ -2,7 +2,9 @@
 // Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "SecretStore.h"
 
+#ifdef DICTAPULSE_HAVE_KEYCHAIN
 #include <qt6keychain/keychain.h>
+#endif
 
 #include <QDebug>
 
@@ -32,6 +34,7 @@ void SecretStore::setKey(const QString& id, const QString& value)
         return;
     }
 
+#ifdef DICTAPULSE_HAVE_KEYCHAIN
     auto* job = new QKeychain::WritePasswordJob(QString::fromLatin1(kService), this);
     job->setAutoDelete(true);
     job->setInsecureFallback(true);  // tolerate boxes without KWallet/libsecret
@@ -42,21 +45,28 @@ void SecretStore::setKey(const QString& id, const QString& value)
             qWarning() << "[DictaPulse] keychain write failed for" << id << ":" << j->errorString();
     });
     job->start();
+#endif
 }
 
 void SecretStore::clearKey(const QString& id)
 {
     m_cache.remove(id);
     emit changed(id);
+#ifdef DICTAPULSE_HAVE_KEYCHAIN
     auto* job = new QKeychain::DeletePasswordJob(QString::fromLatin1(kService), this);
     job->setAutoDelete(true);
     job->setInsecureFallback(true);
     job->setKey(id);
     job->start();
+#endif
 }
 
 void SecretStore::preload(const QStringList& ids)
 {
+#ifndef DICTAPULSE_HAVE_KEYCHAIN
+    Q_UNUSED(ids)
+    return;
+#else
     for (const QString& id : ids) {
         auto* job = new QKeychain::ReadPasswordJob(QString::fromLatin1(kService), this);
         job->setAutoDelete(true);
@@ -71,6 +81,8 @@ void SecretStore::preload(const QStringList& ids)
         });
         job->start();
     }
+}
+#endif
 }
 
 } // namespace dictapulse

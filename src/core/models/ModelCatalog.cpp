@@ -2,7 +2,10 @@
 // Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "ModelCatalog.h"
 
+#include <QCoreApplication>
 #include <QDir>
+#include <QFileInfo>
+#include <QSettings>
 #include <QStandardPaths>
 
 namespace dictapulse {
@@ -29,6 +32,11 @@ QVector<ModelInfo> buildCatalog()
     add("medium",     "Medium (multilingual)","ggml-medium.bin",   1'533'763'000,true,  "medium", "slow",      "excellent", "~3.5 GB");
     add("large-v3",   "Large v3 (multilingual)", "ggml-large-v3.bin", 3'100'000'000, true, "large", "very slow", "excellent", "~6 GB");
     add("large-v3-turbo", "Large v3 Turbo (multilingual)", "ggml-large-v3-turbo.bin", 1'620'000'000, true, "large-turbo", "medium", "excellent", "~4 GB");
+
+    // Not hosted in the official ggerganov/whisper.cpp repository: no download URL.
+    // It is offered once a copy is present in a model directory (see extraDirs()).
+    v.push_back({ "large-v3-q8_0", "Large v3 Q8 (multilingual, local file)", "whisper-large-v3-q8_0.gguf",
+                  QString(), 1'656'538'283, true, "large", "medium", "excellent", "~3 GB", {} });
     return v;
 }
 } // namespace
@@ -55,8 +63,25 @@ QString ModelCatalog::downloadDir()
     return path;
 }
 
+QStringList ModelCatalog::extraDirs()
+{
+    QStringList dirs;
+    for (const QString& d : qEnvironmentVariable("DICTAPULSE_MODEL_DIRS").split(QLatin1Char(':'), Qt::SkipEmptyParts))
+        dirs << d;
+    QSettings s(QSettings::IniFormat, QSettings::UserScope,
+                QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    for (const QString& d : s.value(QStringLiteral("models/extraDirs")).toStringList()) {
+        if (!d.trimmed().isEmpty()) dirs << d.trimmed();
+    }
+    return dirs;
+}
+
 QString ModelCatalog::localPath(const ModelInfo& info)
 {
+    for (const QString& dir : extraDirs()) {
+        const QString candidate = QDir(dir).filePath(info.filename);
+        if (QFileInfo::exists(candidate)) return candidate;
+    }
     return downloadDir() + "/" + info.filename;
 }
 

@@ -95,6 +95,19 @@ public:
     bool clipboardFallback() const;
     void setClipboardFallback(bool value);
 
+    /// Press Enter once after inserting text. Off by default: dictation never
+    /// submits a message or runs a command unless this is switched on.
+    bool pressEnterAfterInsert() const;
+    void setPressEnterAfterInsert(bool value);
+
+    /// Capture device: an explicit id, or empty for automatic selection that
+    /// prefers a device matching `preferredMicrophones` (comma separated,
+    /// case-insensitive) and otherwise uses the system default.
+    QString inputDevice() const;
+    void setInputDevice(const QString& value);
+    QString preferredMicrophones() const;
+    void setPreferredMicrophones(const QString& value);
+
     QString activeModel() const;
     void setActiveModel(const QString& value);
 
@@ -219,6 +232,7 @@ signals:
     void shortcutCancelChanged();
     void dictationModeChanged();
     void outputModeChanged();
+    void inputDeviceChanged();
     void clipboardFallbackChanged();
     void activeModelChanged();
     void defaultLanguageChanged();

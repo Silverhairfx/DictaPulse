@@ -121,6 +121,10 @@ void ModelManager::download(const QString& id)
         emit downloadFailed(id, tr("Unknown model id"));
         return;
     }
+    if (info->url.isEmpty()) {
+        emit downloadFailed(id, tr("This model has no download source. Place the file in a model directory."));
+        return;
+    }
     const QString local = ModelCatalog::localPath(*info);
     QDir().mkpath(QFileInfo(local).absolutePath());
 

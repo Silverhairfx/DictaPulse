@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "TextInjector.h"
 
+#include "InsertionPolicy.h"
+
 #include <QClipboard>
 #include <QDBusArgument>
 #include <QDBusConnection>
@@ -43,6 +45,7 @@ TextInjector::TextInjector(QObject* parent)
     m_hasWtype = !QStandardPaths::findExecutable("wtype").isEmpty();
     m_hasXdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
     m_hasYdotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
+    m_hypr = HyprlandIpc::available();
 
     const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     m_isWayland = env.value("XDG_SESSION_TYPE").compare("wayland", Qt::CaseInsensitive) == 0
@@ -130,6 +133,85 @@ bool TextInjector::setKbLayout(int index)
     if (!kbd.isValid()) return false;
     QDBusReply<bool> reply = kbd.call("setLayout", static_cast<uint>(index));
     return reply.isValid() && reply.value();
+}
+
+bool TextInjector::runWtype(const QStringList& args)
+{
+    QProcess p;
+    p.setProcessChannelMode(QProcess::MergedChannels);
+    p.start("wtype", args);
+    if (!p.waitForStarted(1500)) {
+        std::fprintf(stderr, "[DictaPulse] wtype failed to start\n");
+        std::fflush(stderr);
+        return false;
+    }
+    if (!p.waitForFinished(15000)) {
+        p.kill();
+        std::fprintf(stderr, "[DictaPulse] wtype timed out\n");
+        std::fflush(stderr);
+        return false;
+    }
+    const int rc = p.exitCode();
+    if (rc != 0) {
+        std::fprintf(stderr, "[DictaPulse] wtype exit=%d output='%s'\n", rc, p.readAll().constData());
+        std::fflush(stderr);
+    }
+    return rc == 0;
+}
+
+TextInjector::Result TextInjector::injectHyprland(const QString& text, const QString& mode,
+                                                  bool clipboardFallback, const InsertTarget& target)
+{
+    using namespace insertion;
+
+    Inputs in;
+    in.text = text;
+    in.mode = mode;
+    in.target = target.window;
+    in.current = HyprlandIpc::activeWindow();
+    in.pressEnterAfter = target.pressEnter;
+    const Decision d = decide(in);
+
+    auto sameWindow = [&target]() {
+        const HyprWindow now = HyprlandIpc::activeWindow();
+        return now.valid() && now.address == target.window.address;
+    };
+
+    std::fprintf(stderr,
+                 "[DictaPulse] hyprland target=%s class='%s' now=%s class='%s' route=%d focusChanged=%d\n",
+                 qUtf8Printable(target.window.address), qUtf8Printable(target.window.cls),
+                 qUtf8Printable(in.current.address), qUtf8Printable(in.current.cls),
+                 static_cast<int>(d.route), d.focusChanged);
+    std::fflush(stderr);
+
+    if (d.route == Route::Clipboard) {
+        copyToClipboard(d.text);
+        return d.focusChanged ? Result::FocusChanged : Result::ClipboardOnly;
+    }
+
+    bool ok = false;
+    if (d.route == Route::Type) {
+        ok = runWtype(wtypeTypeArgs(d.text));
+        if (!ok && clipboardFallback) {
+            copyToClipboard(d.text);
+            QThread::msleep(150);
+            if (!sameWindow()) return Result::FocusChanged;
+            ok = runWtype(wtypePasteArgs(d.chord));
+        }
+    } else { // Paste
+        copyToClipboard(d.text);
+        // Let wl-copy's helper claim the selection before the paste chord.
+        QThread::msleep(150);
+        if (!sameWindow()) return Result::FocusChanged;
+        ok = runWtype(wtypePasteArgs(d.chord));
+    }
+    if (!ok) {
+        copyToClipboard(d.text);
+        return Result::ClipboardOnly;
+    }
+
+    if (d.pressEnter && sameWindow()) runWtype(wtypeEnterArgs());
+    return Result::Inserted;
 }
 
 bool TextInjector::typeViaWtype(const QString& text)
@@ -249,9 +331,14 @@ bool TextInjector::needsPasteRoute(const QString& text)
     return true;
 }
 
-TextInjector::Result TextInjector::inject(const QString& text, const QString& mode, bool clipboardFallback)
+TextInjector::Result TextInjector::inject(const QString& text, const QString& mode, bool clipboardFallback,
+                                          const InsertTarget& target)
 {
     if (text.isEmpty()) return Result::Failed;
+
+    // Hyprland: the focused window is known, so insertion is guarded against
+    // focus changes and uses the virtual keyboard directly (layout independent).
+    if (m_hypr && m_hasWtype) return injectHyprland(text, mode, clipboardFallback, target);
 
     if (mode == "clipboard") {
         copyToClipboard(text);

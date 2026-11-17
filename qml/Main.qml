@@ -241,7 +241,7 @@ ApplicationWindow {
     Connections {
         target: controller
         function onOverlayRequested(show) {
-            if (show) overlay.showOverlay()
+            if (show) { overlayShell.followFocusedMonitor(); overlay.showOverlay() }
             else      overlay.hideOverlay()
         }
     }

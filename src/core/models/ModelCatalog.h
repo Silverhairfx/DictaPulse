@@ -3,6 +3,7 @@
 #pragma once
 
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 namespace dictapulse {
@@ -26,6 +27,11 @@ public:
     static const QVector<ModelInfo>& all();
     static const ModelInfo* find(const QString& id);
     static QString downloadDir();
+    /// Additional read-only directories searched for model files before the
+    /// download directory: env DICTAPULSE_MODEL_DIRS (colon separated) and the
+    /// `models/extraDirs` setting. Lets a model that already lives on disk be
+    /// used in place instead of being downloaded again.
+    static QStringList extraDirs();
     static QString localPath(const ModelInfo& info);
 };
 

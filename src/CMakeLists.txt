@@ -63,6 +63,26 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/fonts/DMSerifDisplay-
     PROPERTIES QT_RESOURCE_ALIAS fonts/DMSerifDisplay-Regular.ttf
 )
 
+# Desktop-integration logic with no GUI dependencies: Hyprland IPC, the
+# insertion policy, the control socket and microphone selection. Built as a
+# library so the unit tests exercise exactly what the application runs.
+add_library(dictapulse_logic STATIC
+    platform/linux/HyprlandIpc.h
+    platform/linux/HyprlandIpc.cpp
+    platform/linux/InsertionPolicy.h
+    platform/linux/InsertionPolicy.cpp
+    platform/linux/ControlChannel.h
+    platform/linux/ControlChannel.cpp
+    core/audio/InputDeviceSelector.h
+    core/audio/InputDeviceSelector.cpp
+)
+target_link_libraries(dictapulse_logic PUBLIC Qt6::Core Qt6::Network)
+target_include_directories(dictapulse_logic PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/audio
+)
+
 qt_add_executable(dictapulse
     main.cpp
     app/Settings.h
@@ -98,6 +118,8 @@ qt_add_executable(dictapulse
     platform/linux/TextInjector.cpp
     platform/linux/ActiveWindowWatcher.h
     platform/linux/ActiveWindowWatcher.cpp
+    platform/linux/OverlayShell.h
+    platform/linux/OverlayShell.cpp
 )
 
 target_include_directories(dictapulse PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -125,9 +147,14 @@ target_link_libraries(dictapulse PRIVATE
     Qt6::Svg
     Qt6::Network
     Qt6::DBus
-    Qt6Keychain::Qt6Keychain
     whisper
+    dictapulse_logic
 )
+
+if(Qt6Keychain_FOUND)
+    target_link_libraries(dictapulse PRIVATE Qt6Keychain::Qt6Keychain)
+    target_compile_definitions(dictapulse PRIVATE DICTAPULSE_HAVE_KEYCHAIN)
+endif()
 
 if(DICTAPULSE_HAVE_KF6)
     target_link_libraries(dictapulse PRIVATE

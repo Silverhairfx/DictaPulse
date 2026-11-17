@@ -10,6 +10,7 @@
 #include <QPointer>
 #include <QString>
 #include <QThread>
+#include <QElapsedTimer>
 #include <QTimer>
 
 namespace dictapulse {
@@ -62,6 +63,9 @@ public:
     Q_INVOKABLE void startDictation();
     Q_INVOKABLE void stopDictation();
     Q_INVOKABLE void cancelDictation();
+    /// Hold-to-talk from a control interface that reports press and release.
+    Q_INVOKABLE void pushToTalkPressed();
+    Q_INVOKABLE void pushToTalkReleased();
     Q_INVOKABLE void clearError();
     Q_INVOKABLE void applyShortcuts();
     Q_INVOKABLE bool ensureModelLoaded();
@@ -91,6 +95,8 @@ private slots:
     void onSilenceDetected();
     void onCaptureError(const QString& message);
     void onDictationShortcut();
+    void onPttPressed() { pushToTalkPressed(); }
+    void onPttReleased() { pushToTalkReleased(); }
     void onCancelShortcut();
     void onTraySettings();
     void onTrayQuit();
@@ -125,6 +131,8 @@ private:
     QString m_effectiveOutputMode; // resolved at dictation start (per-app aware)
     QString m_dictationApp;        // focused app captured at dictation start
     bool m_dictationActive = false;
+    bool m_pttHeld = false;       // started by a hold-to-talk press, ends on release
+    QElapsedTimer m_pttTimer;
 };
 
 } // namespace dictapulse

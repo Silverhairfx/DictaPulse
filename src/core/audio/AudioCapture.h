@@ -6,6 +6,8 @@
 #include <QIODevice>
 #include <QObject>
 #include <QPointer>
+#include <QString>
+#include <QStringList>
 #include <QTimer>
 
 #include <vector>
@@ -27,6 +29,16 @@ public:
     ~AudioCapture() override;
 
     bool isRecording() const { return m_recording; }
+
+    /// Input selection: an explicit device id wins, then the first device matching
+    /// a preferred pattern (for example "boya"), then the system default. This
+    /// never changes the system's default input.
+    void setDevicePreference(const QString& explicitId, const QStringList& preferredPatterns)
+    {
+        m_explicitDevice = explicitId;
+        m_preferredPatterns = preferredPatterns;
+    }
+    QString lastDeviceDescription() const { return m_lastDevice; }
 
     /// Returns interleaved float32 samples in [-1, 1] for whisper. Trims
     /// trailing silence so the model isn't fed a long quiet tail. When
@@ -56,7 +68,11 @@ private slots:
     void onSilenceTick();
 
 private:
+    bool startFromFile(const QString& path);
     QAudioSource* m_source = nullptr;
+    QString m_explicitDevice;
+    QStringList m_preferredPatterns;
+    QString m_lastDevice;
     QPointer<QIODevice> m_io;
     QByteArray m_pcm;
     QTimer m_silenceTimer;

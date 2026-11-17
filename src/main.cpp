@@ -9,9 +9,12 @@
 #include "core/hardware/HardwareInfo.h"
 #include "core/models/ModelManager.h"
 #include "core/profile/ProfileStats.h"
+#include "platform/linux/ControlChannel.h"
 #include "platform/linux/LinuxAdapter.h"
+#include "platform/linux/OverlayShell.h"
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDir>
@@ -35,6 +38,43 @@
 #endif
 
 namespace {
+bool runningUnderKde()
+{
+    return qEnvironmentVariable("XDG_CURRENT_DESKTOP").contains(QStringLiteral("KDE"), Qt::CaseInsensitive)
+        || qEnvironmentVariable("KDE_FULL_SESSION") == QLatin1String("true");
+}
+
+// `dictapulse --toggle` and friends: forward one command to the running
+// instance. Compositors without a global-shortcut service (Hyprland, sway) bind
+// keys to these. Exit codes: 0 delivered, 1 no running instance, 2 bad usage.
+int runControlClient(int argc, char* argv[], const QString& command)
+{
+    QCoreApplication app(argc, argv);
+    QString reply;
+    if (dictapulse::ControlChannel::send(command, &reply)) {
+        if (command == QLatin1String("status")) std::printf("%s\n", qUtf8Printable(reply.mid(3)));
+        return 0;
+    }
+    std::fprintf(stderr, "dictapulse: not running\n");
+    return 1;
+}
+
+void printUsage()
+{
+    std::printf(
+        "Usage: dictapulse [command]\n"
+        "\n"
+        "Without a command, starts the app (or raises the running instance).\n"
+        "Commands sent to the running instance:\n"
+        "  --toggle        start dictation, or stop and insert\n"
+        "  --ptt-press     start dictation (hold-to-talk key down)\n"
+        "  --ptt-release   stop dictation and insert (hold-to-talk key up)\n"
+        "  --cancel        discard the current dictation\n"
+        "  --status        print the current state\n"
+        "  --show          open the settings window\n"
+        "  --quit          quit the running instance\n");
+}
+
 // KWin ignores client-side positioning for normal Wayland windows, so we can't
 // place the frameless overlay at the bottom-center ourselves. Instead we write
 // a KWin window rule (matched by the overlay's unique title) that forces the
@@ -89,6 +129,29 @@ void writeOverlayKwinRule(int overlayW, int overlayH, const QString& position)
 
 int main(int argc, char* argv[])
 {
+    // Control commands never start the GUI.
+    if (argc >= 2) {
+        const QString arg = QString::fromLocal8Bit(argv[1]);
+        if (arg == QLatin1String("--help") || arg == QLatin1String("-h")) {
+            printUsage();
+            return 0;
+        }
+        if (arg.startsWith(QLatin1String("--")) && arg.size() > 2) {
+            const QString command = arg.mid(2);
+            if (dictapulse::ControlChannel::isKnownCommand(command) && command != QLatin1String("ping"))
+                return runControlClient(argc, argv, command);
+        }
+    }
+
+    // Single instance: a second launch (autostart, launcher click) just raises the first.
+    {
+        const bool background = argc >= 2 && QString::fromLocal8Bit(argv[1]) == QLatin1String("--background");
+        if (dictapulse::ControlChannel::send(QStringLiteral("ping"), nullptr, 300)) {
+            if (!background) dictapulse::ControlChannel::send(QStringLiteral("show"), nullptr, 600);
+            return 0;
+        }
+    }
+
     // qInfo() is suppressed by default in release; we use it for the
     // [DictaPulse] diagnostic lines that drive bug reports. Force-on
     // unless the user has explicitly set QT_LOGGING_RULES themselves.
@@ -137,6 +200,7 @@ int main(int argc, char* argv[])
     auto* hardware = new dictapulse::HardwareInfo(&app);
     auto* models = new dictapulse::ModelManager(&app);
     auto* platform = new dictapulse::LinuxAdapter(&app);
+    auto* overlayShell = new dictapulse::OverlayShell(&app);
     platform->setAnimationEnabled(settings->trayIconAnimation());
     QObject::connect(settings, &dictapulse::Settings::trayIconAnimationChanged,
                      platform, [platform, settings]() {
@@ -181,7 +245,7 @@ int main(int argc, char* argv[])
                     "Icon=dictapulse\n"
                     "X-GNOME-Autostart-enabled=true\n"
                     "Comment=Voice-to-text dictation\n")
-                    .arg(QCoreApplication::applicationFilePath()).toUtf8());
+                    .arg(qEnvironmentVariable("DICTAPULSE_LAUNCHER", QCoreApplication::applicationFilePath())).toUtf8());
             }
         } else {
             QFile::remove(path);
@@ -192,6 +256,7 @@ int main(int argc, char* argv[])
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("controller", controller);
+    engine.rootContext()->setContextProperty("overlayShell", overlayShell);
     engine.rootContext()->setContextProperty("appSettings", settings);
     engine.rootContext()->setContextProperty("modelManager", models);
     engine.rootContext()->setContextProperty("hardwareInfo", hardware);
@@ -223,6 +288,10 @@ int main(int argc, char* argv[])
     // rule in sync when the size slider changes.
     for (QWindow* w : QGuiApplication::topLevelWindows()) {
         if (w->objectName() != QLatin1String("overlayWin")) continue;
+        // Only KWin needs (and understands) the window rule; other compositors
+        // place the overlay as a layer-shell surface (see OverlayShell) and the
+        // owner's ~/.config must not gain a KDE rules file.
+        if (!runningUnderKde()) break;
         writeOverlayKwinRule(w->width(), w->height(), settings->overlayPosition());
         QObject::connect(w, &QWindow::widthChanged, w, [w, settings]() {
             writeOverlayKwinRule(w->width(), w->height(), settings->overlayPosition());
