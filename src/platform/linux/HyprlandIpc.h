@@ -14,6 +14,7 @@ struct HyprWindow {
     QString cls;      // window class / app id, lowercased
     QString title;
     qint64 pid = 0;
+    QString comm;     // process name from /proc/<pid>/comm, lowercased (activeWindow() only)
     int monitor = -1;
 
     bool valid() const { return !address.isEmpty(); }

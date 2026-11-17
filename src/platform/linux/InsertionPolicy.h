@@ -42,7 +42,11 @@ struct Decision {
 
 /// Terminal emulators take ctrl+shift+v for paste, everything else ctrl+v.
 bool isTerminalClass(const QString& windowClass);
+/// A window counts as a terminal by class or, for custom classes, by the name of
+/// its process (a kitty started with --class scratch is still kitty).
+bool isTerminalWindow(const HyprWindow& window);
 PasteChord pasteChordFor(const QString& windowClass);
+PasteChord pasteChordFor(const HyprWindow& window);
 
 /// A newline typed through a virtual keyboard is an Enter key press, which
 /// could submit a chat box or run a shell command. Typed text therefore never

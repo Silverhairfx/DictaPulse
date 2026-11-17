@@ -224,6 +224,9 @@ int main(int argc, char* argv[])
     // toggle did nothing.)
     QObject::connect(controller, &dictapulse::Controller::notify, platform,
                      [platform, settings](const QString& title, const QString& body) {
+                         std::fprintf(stderr, "[DictaPulse] notice: %s: %s\n",
+                                      qUtf8Printable(title), qUtf8Printable(body));
+                         std::fflush(stderr);
                          if (settings->notificationsEnabled())
                              platform->showTrayMessage(title, body);
                      });

@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Tymour Kadry / ETK Technologies <https://etk-tech.com>
 #include "HyprlandIpc.h"
 
+#include <QFile>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -87,7 +88,14 @@ QVector<HyprMonitor> HyprlandIpc::parseMonitors(const QByteArray& json)
 
 HyprWindow HyprlandIpc::activeWindow()
 {
-    return parseActiveWindow(request("j/activewindow"));
+    HyprWindow w = parseActiveWindow(request("j/activewindow"));
+    // A terminal started with a custom --class is still a terminal: the process
+    // name tells the paste chord to use.
+    if (w.pid > 0) {
+        QFile f(QStringLiteral("/proc/%1/comm").arg(w.pid));
+        if (f.open(QIODevice::ReadOnly)) w.comm = QString::fromUtf8(f.readLine()).trimmed().toLower();
+    }
+    return w;
 }
 
 QVector<HyprMonitor> HyprlandIpc::monitors()

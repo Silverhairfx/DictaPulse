@@ -43,9 +43,19 @@ bool isTerminalClass(const QString& windowClass)
     return terminalClasses().contains(windowClass.trimmed().toLower());
 }
 
+bool isTerminalWindow(const HyprWindow& w)
+{
+    return isTerminalClass(w.cls) || isTerminalClass(w.comm);
+}
+
 PasteChord pasteChordFor(const QString& windowClass)
 {
     return isTerminalClass(windowClass) ? PasteChord::CtrlShiftV : PasteChord::CtrlV;
+}
+
+PasteChord pasteChordFor(const HyprWindow& w)
+{
+    return isTerminalWindow(w) ? PasteChord::CtrlShiftV : PasteChord::CtrlV;
 }
 
 bool hasLineBreak(const QString& text)
@@ -66,7 +76,7 @@ Decision decide(const Inputs& in)
 {
     Decision d;
     d.text = in.text;
-    d.chord = pasteChordFor(in.current.valid() ? in.current.cls : in.target.cls);
+    d.chord = pasteChordFor(in.current.valid() ? in.current : in.target);
 
     // Focus moved between the start of dictation and now: never type into a
     // window the user did not dictate into. Keep the text on the clipboard.
@@ -83,7 +93,7 @@ Decision decide(const Inputs& in)
         return d;
     }
 
-    const bool terminal = isTerminalClass(in.current.cls);
+    const bool terminal = isTerminalWindow(in.current);
     const bool multiline = hasLineBreak(in.text);
 
     if (in.mode == QLatin1String("copy-paste")) {

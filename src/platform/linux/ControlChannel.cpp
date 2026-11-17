@@ -86,25 +86,26 @@ void ControlChannel::onNewConnection()
             while (sock->canReadLine()) {
                 const QString cmd = QString::fromUtf8(sock->readLine()).trimmed();
                 QByteArray reply = "ok\n";
-                if (!isKnownCommand(cmd)) {
+                if (!isKnownCommand(cmd))
                     reply = "error unknown command\n";
-                } else if (cmd == QLatin1String("status")) {
+                else if (cmd == QLatin1String("status"))
                     reply = "ok " + (m_status ? m_status() : QStringLiteral("unknown")).toUtf8() + "\n";
-                } else if (cmd == QLatin1String("toggle")) {
-                    emit toggleRequested();
-                } else if (cmd == QLatin1String("ptt-press")) {
-                    emit pttPressed();
-                } else if (cmd == QLatin1String("ptt-release")) {
-                    emit pttReleased();
-                } else if (cmd == QLatin1String("cancel")) {
-                    emit cancelRequested();
-                } else if (cmd == QLatin1String("show")) {
-                    emit showRequested();
-                } else if (cmd == QLatin1String("quit")) {
-                    emit quitRequested();
-                }
+
+                // Answer first: acting on a command can block this thread for seconds
+                // (the first dictation loads the model), and the key bind that sent
+                // it should not be left waiting.
                 sock->write(reply);
                 sock->flush();
+
+                auto later = [this](auto signal) {
+                    QMetaObject::invokeMethod(this, signal, Qt::QueuedConnection);
+                };
+                if (cmd == QLatin1String("toggle")) later(&ControlChannel::toggleRequested);
+                else if (cmd == QLatin1String("ptt-press")) later(&ControlChannel::pttPressed);
+                else if (cmd == QLatin1String("ptt-release")) later(&ControlChannel::pttReleased);
+                else if (cmd == QLatin1String("cancel")) later(&ControlChannel::cancelRequested);
+                else if (cmd == QLatin1String("show")) later(&ControlChannel::showRequested);
+                else if (cmd == QLatin1String("quit")) later(&ControlChannel::quitRequested);
             }
         });
     }

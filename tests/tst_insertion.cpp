@@ -55,6 +55,18 @@ private slots:
         QCOMPARE(pasteChordFor(cls), terminalChord ? PasteChord::CtrlShiftV : PasteChord::CtrlV);
     }
 
+    void customClassTerminalIsRecognisedByProcessName()
+    {
+        HyprWindow w = win("0xA", "scratchpad");
+        QCOMPARE(pasteChordFor(w), PasteChord::CtrlV);
+        w.comm = "kitty";
+        QVERIFY(isTerminalWindow(w));
+        QCOMPARE(pasteChordFor(w), PasteChord::CtrlShiftV);
+        const Decision d = decide(inputs("one\ntwo", "insert", w, w));
+        QCOMPARE(d.route, Route::Type);               // terminal: flattened, not pasted
+        QCOMPARE(d.text, QStringLiteral("one two"));
+    }
+
     void chordArguments()
     {
         QCOMPARE(wtypePasteArgs(PasteChord::CtrlV),

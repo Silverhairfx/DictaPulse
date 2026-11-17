@@ -65,7 +65,8 @@ as accidental and discarded.
   applications multi-line text is pasted. DictaPulse presses Enter only when
   `output/pressEnterAfterInsert=true` is set in the settings file, and then only once,
   after a successful insertion into the original window.
-- Paste uses `ctrl+shift+v` in terminal emulators (kitty, foot, alacritty, wezterm,
+- Paste uses `ctrl+shift+v` in terminal emulators (recognised by window class or, for a custom
+  class, by process name: kitty, foot, alacritty, wezterm,
   konsole, ghostty, ...) and `ctrl+v` everywhere else.
 
 ## Microphone
